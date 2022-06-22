@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\narathip.pho\Desktop\mts_ndid_kn\test_api\venv"
+VIRTUAL_ENV="C:\Users\que\Documents\GitHub\ndid_instance\test_api\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

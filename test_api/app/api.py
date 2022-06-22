@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Body, Depends
 
-from app.model import PostSchema, UserSchema, UserLoginSchema
+from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import signJWT
 
@@ -8,9 +8,14 @@ from app.auth.auth_handler import signJWT
 posts = [
     {
         "id": 1,
-        "title": "Pancake",
-        "content": "Lorem Ipsum ..."
-    }
+        "name": "Pancake",
+        "content": ["scb", "ktb", "kkp"]
+    },
+    {
+        "id": 2,
+        "name": "Apple",
+        "content": ["bbc", "kbank"]
+    },
 ]
 
 users = []
@@ -47,6 +52,14 @@ async def add_post(post: PostSchema) -> dict:
     posts.append(post.dict())
     return {
         "data": "post added."
+    }
+
+# todo ... verify simulation
+@app.post("/verify", dependencies=[Depends(JWTBearer())], tags=["posts"])
+async def bank_verify(post: VerifySchema) -> dict:
+    # Todo ... pending time (< 1h) 
+    return {
+        "data": "pending verification with ["+ post.selected_bank +"] ... less than 1 hour"
     }
 
 @app.post("/user/signup", tags=["user"])
