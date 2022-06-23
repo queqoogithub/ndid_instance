@@ -4,7 +4,7 @@
 /mts_ndid_kn/node_modules
 /.pnp
 .pnp.js
-/venv
+/test_api/venv
 
 # testing
 /coverage
