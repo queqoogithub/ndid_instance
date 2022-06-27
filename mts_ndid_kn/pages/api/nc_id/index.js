@@ -18,13 +18,14 @@ export default async function handler(request, response) {
     // }
 
     if (method === "POST") {
-        const { body } = request;
+        const { body, headers } = request;
+        console.log('header auth token pure from cookie: ', headers.cookie.slice(12))
         fetch( "http://localhost:8081/verify", {
         method: 'post',
         headers: {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYWJjQHguY29tIiwiZXhwaXJlcyI6MTY1NjMyODg1MS40MDQ5NjEzfQ.fk8v37PoroxPPLy47CfQ-VIf-eh13v92yLavKLO3qZk'
+            'Authorization': `Bearer ${headers.cookie.slice(12)}`
         },
         body: JSON.stringify( {
 

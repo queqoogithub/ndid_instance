@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useReducer, useState } from "react";
+import Cookies from 'js-cookie';
 
 function reducer(state, action) {
   switch (action.type) {
@@ -35,6 +36,9 @@ export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [data, setData] = useState([]);
   const [toVerify, setToVerify] = useState('');
+  const [testToken, setTestToken] = useState('');
+
+  console.log('Creden Test Token -> Cookie => ', Cookies.get('credenToken'))
 
   //  >>> Mockup: MTS Get user with idp list from K'Num (NDID) <<<
   const fetchData = async () => { // users with own's idp list
@@ -52,7 +56,8 @@ export default function Home() {
     const response = await fetch("/api/nc_id", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization-Test_Creden": Cookies.get('credenToken')
       },
       body: JSON.stringify(state)
     });
@@ -68,7 +73,18 @@ export default function Home() {
 
   return (
     <div style={{ margin: "0 auto", maxWidth: "400px" }}>
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", flexDirection: "column" }}><p></p>
+        <label htmlFor="name">Token to Cookie</label>
+        <input
+          type="text"
+          id="test_token"
+          value={testToken}
+          onChange={(e) => {
+              setTestToken(e.target.value)
+              Cookies.set('credenToken', e.target.value) 
+            }
+          }
+        /><p></p>
         <label htmlFor="name">ID Card</label>
         <input
           type="number"
