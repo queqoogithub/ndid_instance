@@ -8,13 +8,25 @@ from app.auth.auth_handler import signJWT
 posts = [
     {
         "id": 1,
+        "card_id": 4444449999999,
         "name": "Pancake",
         "content": ["scb", "ktb", "kkp"]
     },
     {
         "id": 2,
+        "card_id": 1234599999999,
         "name": "Apple",
         "content": ["bbc", "kbank"]
+    },
+]
+
+pending_verify_users = [
+    {
+        "id": 1,
+        "card_id": 4444449999999,
+        "name": "Pancake",
+        "selected_bank": "scb",
+        "status": "pending"
     },
 ]
 
@@ -46,6 +58,10 @@ async def get_single_post(id: int) -> dict:
                 "data": post
             }
 
+@app.get("/pending_verify_users", tags=["pending_verify_users"])
+async def get_pending_verify() -> dict:
+    return { "data":  pending_verify_users}
+
 @app.post("/posts", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def add_post(post: PostSchema) -> dict:
     post.id = len(posts) + 1
@@ -57,7 +73,9 @@ async def add_post(post: PostSchema) -> dict:
 # todo ... verify simulation
 @app.post("/verify", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def bank_verify(post: VerifySchema) -> dict:
-    # Todo ... pending time (< 1h) 
+    # Todo ... pending time (< 1h)
+    post.id = len(pending_verify_users) + 1
+    pending_verify_users.append(post.dict())
     return {
         "data": "pending verification with ["+ post.selected_bank +"] ... less than 1 hour"
     }

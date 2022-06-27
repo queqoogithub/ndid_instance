@@ -21,3 +21,21 @@ export const data = [
       age: 40,
     },
 ];
+
+export const sample_user_with_idp = [
+  {
+    id: 1,
+    name: "Pong",
+    content: "kbank",
+  },
+  {
+    id: 2,
+    name: "Ruk",
+    content: "scb",
+  },
+  {
+    id: 3,
+    name: "Dang",
+    content: "bbl",
+  },
+];

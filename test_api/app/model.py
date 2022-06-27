@@ -3,12 +3,14 @@ from pydantic import BaseModel, Field, EmailStr
 
 class PostSchema(BaseModel):
     id: int = Field(default=None)
+    card_id: int = Field(...)
     name: str = Field(...)
     content: list = Field(...)
 
     class Config:
         schema_extra = {
             "example": {
+                "card_id": 5555559999999,
                 "name": "Jojo",
                 "content": ["ktc", "kbank", "bbl", "bay"]
             }
@@ -42,13 +44,17 @@ class UserLoginSchema(BaseModel):
 
 class VerifySchema(BaseModel):
     id: int = Field(default=None)
+    card_id: int = Field(...)
     name: str = Field(...)
     selected_bank: str = Field(...)
+    status: str = Field('pending')
 
     class Config:
         schema_extra = {
             "example": {
-                "name": "Apple",
-                "selected_bank": "kbank"
+                "card_id": 1234599999999,
+                "name": "Steve",
+                "selected_bank": "kbank",
+                "status": "pending"
             }
         }
