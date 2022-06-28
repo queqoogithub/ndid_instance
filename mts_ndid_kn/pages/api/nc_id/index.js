@@ -19,13 +19,14 @@ export default async function handler(request, response) {
 
     if (method === "POST") {
         const { body, headers } = request;
+        console.log('header yee: ', headers['authorization-test_creden'])
         console.log('header auth token pure from cookie: ', headers.cookie.slice(12))
         fetch( "http://localhost:8081/verify", {
         method: 'post',
         headers: {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${headers.cookie.slice(12)}`
+            'Authorization': `Bearer ${headers['authorization-test_creden']}` // ${headers.cookie.slice(12)}
         },
         body: JSON.stringify( {
 

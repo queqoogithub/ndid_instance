@@ -37,7 +37,9 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [toVerify, setToVerify] = useState('');
   const [testToken, setTestToken] = useState('');
-
+  const [cardID, setCardID] = useState(0);
+  const [updateStatus, setUpdateStatus] = useState('');
+ 
   console.log('Creden Test Token -> Cookie => ', Cookies.get('credenToken'))
 
   //  >>> Mockup: MTS Get user with idp list from K'Num (NDID) <<<
@@ -70,6 +72,21 @@ export default function Home() {
     const people = await response.json();
     return setToVerify(people);
   };
+
+  const checkStatus = async (card_id) => {
+      const response = await fetch(`/api/nc_id/${card_id}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      try {
+        const people = await response.json();
+        console.log('Set Update Status => ', people)
+        return setUpdateStatus(people);
+      } catch (e) {
+        console.log('Check Status Error: ', e)
+      }
+  }
 
   return (
     <div style={{ margin: "0 auto", maxWidth: "400px" }}>
@@ -160,6 +177,20 @@ export default function Home() {
       ) : null}
       <p>To verification</p>
       {toVerify ? <pre>{JSON.stringify(toVerify, null, 4)}</pre> : null}
+
+      <label htmlFor="name">Check Verify Status (ID Card): </label>
+      <input
+        type="number"
+        id="card_id"
+        value = {cardID}
+        onChange={(e) => {
+            setCardID(e.target.value)
+            checkStatus(e.target.value)
+          }
+        }
+      />
+      {updateStatus ? <pre>{JSON.stringify(updateStatus, null, 4)}</pre> : null}
+
     </div>
   );
 }

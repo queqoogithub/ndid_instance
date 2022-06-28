@@ -14,9 +14,21 @@ posts = [
     },
     {
         "id": 2,
-        "card_id": 1234599999999,
+        "card_id": 3333399999999,
+        "name": "Kiki",
+        "content": ["ttb"]
+    },
+    {
+        "id": 3,
+        "card_id": 1111199999999,
         "name": "Apple",
         "content": ["bbc", "kbank"]
+    },
+    {
+        "id": 4,
+        "card_id": 2222299999999,
+        "name": "Luffy",
+        "content": []
     },
 ]
 
@@ -28,11 +40,22 @@ pending_verify_users = [
         "selected_bank": "scb",
         "status": "pending"
     },
+    {
+        "id": 2,
+        "card_id": 1111199999999,
+        "name": "Apple",
+        "selected_bank": "kbank",
+        "status": "verified"
+    },
 ]
 
 users = []
 
-app = FastAPI()
+app = FastAPI(
+    title="BDEV-CREDEN-KNUM MOCKUP",
+    description="The newbie mockup provides testing as Creden and K'Num. We can opt between Creden or K'Num in the mockup.",
+    version="0.0.1"
+)
 
 
 @app.get("/", tags=["root"])
