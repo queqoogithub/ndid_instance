@@ -93,15 +93,35 @@ async def add_post(post: PostSchema) -> dict:
         "data": "post added."
     }
 
-# todo ... verify simulation
+# todo ... verify simulation ----------------------------------------------- start #
 @app.post("/verify", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def bank_verify(post: VerifySchema) -> dict:
     # Todo ... pending time (< 1h)
     post.id = len(pending_verify_users) + 1
     pending_verify_users.append(post.dict())
     return {
-        "data": "pending verification with ["+ post.selected_bank +"] ... less than 1 hour"
+        "data": "pending verification with ref_id: [" + str(post.id) + "] ipd: ["+ post.selected_bank +"] ... less than 1 hour."
     }
+
+@app.put("/verify/update/{id}", tags=["pending_verify_users"])
+async def update_status(id: int) -> dict:
+    if id > len(pending_verify_users):
+        return {
+            "error": "No such user with the supplied ID."
+        }
+    print('selected index: ', id)
+    
+    for user in pending_verify_users:
+        if user["id"] == id:
+            #pending_verify_users.index(user["id"])
+            #print('index had selected ', pending_verify_users.index(user["id"]))
+            print('pending_verify_users id: ', pending_verify_users.index(user))
+            print('pending_verify_users: ', pending_verify_users[pending_verify_users.index(user)])
+            print('pending_verify_users status: ', pending_verify_users[pending_verify_users.index(user)]['status'])
+            pending_verify_users[pending_verify_users.index(user)]['status'] = 'ok'
+            
+
+# todo ... verify simulation ----------------------------------------------- end #
 
 @app.post("/user/signup", tags=["user"])
 async def create_user(user: UserSchema = Body(...)):

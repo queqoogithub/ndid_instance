@@ -29,7 +29,7 @@ function reducer(state, action) {
 const initialState = {
   card_id: 9999999999999,
   name: "",
-  content: ""
+  content: "",
 };
 
 export default function Home() {
@@ -39,6 +39,7 @@ export default function Home() {
   const [testToken, setTestToken] = useState('');
   const [cardID, setCardID] = useState(0);
   const [updateStatus, setUpdateStatus] = useState('');
+  const [pendingTime, setPendingTime] = useState(0);
  
   console.log('Creden Test Token -> Cookie => ', Cookies.get('credenToken'))
 
@@ -59,7 +60,8 @@ export default function Home() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization-Test_Creden": Cookies.get('credenToken')
+        "Authorization-Test-Creden": Cookies.get('credenToken'),
+        "Pending-Verification-Time": pendingTime,
       },
       body: JSON.stringify(state)
     });
@@ -99,6 +101,16 @@ export default function Home() {
           onChange={(e) => {
               setTestToken(e.target.value)
               Cookies.set('credenToken', e.target.value) 
+            }
+          }
+        />
+        <label htmlFor="name">Pending Verification Time (ms.)</label>
+        <input
+          type="number"
+          id="test_pending_time"
+          value={pendingTime}
+          onChange={(e) => {
+              setPendingTime(e.target.value)
             }
           }
         /><p></p>
@@ -175,10 +187,10 @@ export default function Home() {
           </div>
         </div>
       ) : null}
-      <p>To verification</p>
+      <p>To Verify</p>
       {toVerify ? <pre>{JSON.stringify(toVerify, null, 4)}</pre> : null}
 
-      <label htmlFor="name">Check Verify Status (ID Card): </label>
+      <label htmlFor="name">Check Verification Status (ID Card): </label>
       <input
         type="number"
         id="card_id"

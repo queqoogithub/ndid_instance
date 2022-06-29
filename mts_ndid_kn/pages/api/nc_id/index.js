@@ -19,14 +19,14 @@ export default async function handler(request, response) {
 
     if (method === "POST") {
         const { body, headers } = request;
-        console.log('header yee: ', headers['authorization-test_creden'])
-        console.log('header auth token pure from cookie: ', headers.cookie.slice(12))
+        console.log('header identify user: ', headers['authorization-test-creden'])
+        //console.log('header auth token pure from cookie: ', headers.cookie.slice(12))
         fetch( "http://localhost:8081/verify", {
         method: 'post',
         headers: {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${headers['authorization-test_creden']}` // ${headers.cookie.slice(12)}
+            'Authorization': `Bearer ${headers['authorization-test-creden']}` // ${headers.cookie.slice(12)}
         },
         body: JSON.stringify( {
 
@@ -37,6 +37,9 @@ export default async function handler(request, response) {
         } )
         } ).then( res => res.json() )
            .then( res => console.log( res ) );
-        return response.status(200).json(body);
+        //return response.status(200).json(body);
+
+        // Todo ... loop check (every 30 sec) for pending verification
+        setTimeout(() => {return response.status(200).json(body)}, headers['pending-verification-time']);
     }
   }
