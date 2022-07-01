@@ -11,15 +11,10 @@ function reducer(state, action) {
         ...state,
         card_id: action.payload.card_id
       };
-    case "UPDATE_FIRSTNAME":
+    case "UPDATE_NAME":
       return {
         ...state,
-        firstname: action.payload.firstname
-      };
-    case "UPDATE_LASTNAME":
-      return {
-        ...state,
-        lastname: action.payload.lastname
+        name: action.payload.name
       };
     case "UPDATE_APPTYPE":
       return {
@@ -36,7 +31,6 @@ function reducer(state, action) {
 const initialState = {
   card_id: 9999999999999,
   firstname: "test1",
-  lastname: "asuser",
   apptype: "abc",
 };
 
@@ -122,6 +116,7 @@ export default function Home() {
   return (
     <div style={{ margin: "0 auto", maxWidth: "400px" }}>
       <div style={{ display: "flex", flexDirection: "column" }}><p></p>
+        <h3>🦄 <b>Creden Form Instance</b></h3>
         <label htmlFor="name">Token to Cookie</label>
         <input
           type="text"
@@ -145,31 +140,19 @@ export default function Home() {
             })
           }
         />
-        <label htmlFor="firstname">Firstname</label>
+        <label htmlFor="name">Name</label>
         <input
           type="text"
-          id="firstname"
-          value={state.firstname}
+          id="name"
+          value={state.name}
           onChange={(e) =>
             dispatch({
-              type: "UPDATE_FIRSTNAME",
-              payload: { firstname: e.target.value }
+              type: "UPDATE_NAME",
+              payload: { name: e.target.value }
             })
           }
         />
-        <label htmlFor="lastname">Lastname</label>
-        <input
-          type="text"
-          id="lastname"
-          value={state.lastname}
-          onChange={(e) =>
-            dispatch({
-              type: "UPDATE_LASTNAME",
-              payload: { lastname: e.target.value }
-            })
-          }
-        />
-        <label htmlFor="lastname">Application Type</label>
+        <label htmlFor="name">Application Type</label>
         <input
           type="text"
           id="apptype"

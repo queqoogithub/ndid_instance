@@ -81,6 +81,15 @@ async def get_single_post(id: int) -> dict:
                 "data": post
             }
 
+# To modify post/{id} -> users/{card_id}
+@app.get("/users/{card_id}", tags=["posts"])
+async def get_single_post(card_id: int) -> dict:
+    for post in posts:
+        if post["card_id"] == card_id:
+            return {
+                "data": post
+            }
+
 @app.get("/pending_verify_users", tags=["pending_verify_users"])
 async def get_pending_verify() -> dict:
     return { "data":  pending_verify_users}
