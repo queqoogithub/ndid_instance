@@ -4,6 +4,8 @@ from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import signJWT
 
+from datetime import datetime
+
 
 posts = [
     {
@@ -29,6 +31,12 @@ posts = [
         "card_id": 2222299999999,
         "name": "Luffy",
         "content": []
+    },
+    {
+        "id": 5,
+        "card_id": 1234599999999,
+        "name": "Steve",
+        "content": ["gsb", "kbank"]
     },
 ]
 
@@ -106,10 +114,16 @@ async def add_post(post: PostSchema) -> dict:
 @app.post("/verify", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def bank_verify(post: VerifySchema) -> dict:
     # Todo ... pending time (< 1h)
+    ts = datetime.timestamp(datetime.now())
     post.id = len(pending_verify_users) + 1
     pending_verify_users.append(post.dict())
     return {
-        "data": "pending verification with ref_id: [" + str(post.id) + "] ipd: ["+ post.selected_bank +"] ... less than 1 hour."
+        #"data": "pending verification with ref_id: [" + str(post.id) + "] ipd: ["+ post.selected_bank +"] ... less than 1 hour.",
+        "ref_id": post.id,
+        "card_id": post.card_id,
+        "name": post.name,
+        "selected_bank": post.selected_bank,
+        "ts": ts,
     }
 
 @app.put("/verify/update/{id}", tags=["pending_verify_users"])

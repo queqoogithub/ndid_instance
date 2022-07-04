@@ -45,12 +45,24 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const [updateStatus, setUpdateStatus] = useState('')
     const [pendingTime, setPendingTime] = useState(0);
 
+    console.log('Cookie Pending User: ', Cookies.get('pendingUser'))
+
+    // let currentDate = new Date()
+    // currentDate.getTime() / 100000
+
+    // TODO ... Pending Verification
+    const pendingVerificationClock = async (openTimeStamp) => {
+        // const timerId = setInterval(refreshClock, 1000);
+        // checkVerificationStatus()
+        pass
+    }
+
     const verify = async () => { // user selected one idp
         const response = await fetch("/api/nc_id", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization-Test-Creden": Cookies.get('credenToken'),
+            "Authorization-Test-Creden": Cookies.get('credenToken'), // ตอน dev ให้เอา token คุณหนุ่มไปไว้ฝั่ง server (api) อย่าเอาไว้ฝั่ง client !!!
             "Pending-Verification-Time": pendingTime,
           },
           body: JSON.stringify({
@@ -59,13 +71,16 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
             content: desiredIpd,
         })
         })
-    
+      
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
         }
     
         dispatch({ type: "CLEAR" })
         const pendingUser = await response.json();
+        console.log('pending User ===> ', pendingUser)
+        Cookies.set('pendingUser', JSON.stringify(pendingUser))
+        
         return setToVerify(pendingUser);
     }
 
