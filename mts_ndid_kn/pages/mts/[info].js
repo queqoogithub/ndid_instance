@@ -1,6 +1,6 @@
 // creden - mts - k'num experiment 
 import Link from "next/link";
-import { useReducer, useState } from "react";
+import { useReducer, useState, useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
@@ -43,17 +43,56 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const [cardId, setCardId] = useState(0)
     const [desiredIpd, setDsiredIdp] = useState('')
     const [updateStatus, setUpdateStatus] = useState('')
-    const [pendingTime, setPendingTime] = useState(0);
+    const [pendingTime, setPendingTime] = useState(0)
 
-    console.log('Cookie Pending User: ', Cookies.get('pendingUser'))
+    // test :::: Get & Query Cookie
+    try {
+    const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+    const pendingUserCardId = JSON.parse(pendingUserCardIdasStr) // convert text into a JavaScript object
+    console.log('Cookie Pending Ref ID: ', pendingUserCardId['ref_id']) 
+    //const ck = async () => await checkVerificationStatus(pendingUserCardId['card_id'])
+    } catch (e) { console.log('error when test to query cookies: ', e) }
+
+    // TODO??? ... useEffect -> check Auth User with Handler function from api
 
     // let currentDate = new Date()
-    // currentDate.getTime() / 100000
+    // currentDate.getTime() / 1000
 
     // TODO ... Pending Verification
+    useEffect(() => {
+      // try {
+      //   const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+      //   const pendingUserCardId = JSON.parse(pendingUserCardIdasStr) // convert text into a JavaScript object
+      // } catch (e) { console.log('error when query cookies: ', e) }
+      console.log('in useEffect !!!')
+
+      if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
+      if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
+
+      const fetchStatusData = async () => {
+        try {
+          const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+          const pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
+
+          let currentDate = new Date()
+          console.log('Current time: ', currentDate.getTime() / 1000) 
+          console.log('Init time: ', pendingUserCardId['ts'])
+          console.log('Counting time: ', (currentDate.getTime() / 1000) - pendingUserCardId['ts'])
+
+          await checkVerificationStatus(pendingUserCardId['ref_id'])
+        } catch (e) { console.log('error @fetchStatusData: ', e) }
+      }
+
+      if (Cookies.get('pendingUser')) { 
+        const interval = setInterval(fetchStatusData, 5000) 
+      }
+      
+
+    }, [toVerify])
+
     const pendingVerificationClock = async (openTimeStamp) => {
         // const timerId = setInterval(refreshClock, 1000);
-        // checkVerificationStatus()
+        // await checkVerificationStatus(idCard)
         pass
     }
 
@@ -77,27 +116,43 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         }
     
         dispatch({ type: "CLEAR" })
-        const pendingUser = await response.json();
+        const pendingUser = await response.json()
         console.log('pending User ===> ', pendingUser)
         Cookies.set('pendingUser', JSON.stringify(pendingUser))
         
-        return setToVerify(pendingUser);
+        // try {
+        // const id = setInterval(() => {
+        //   checkVerificationStatus(3333399999999) // <-- invoke in interval callback
+        // }, 5000);
+        // } catch (e) { console.log('error when interval: ', e) }
+
+        return setToVerify(pendingUser)
     }
 
-    const checkVerificationStatus = async (card_id) => {
-        const response = await fetch(`/api/nc_id/${card_id}`);
+    const checkVerificationStatus = async (id) => {
+        const response = await fetch(`/api/nc_id/${id}`);
     
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
         try {
-          const people = await response.json();
-          console.log('Set Update Status => ', people)
-          return setUpdateStatus(people);
+          const people = await response.json()
+          console.log('Check & Update Status => ', people)
+          setUpdateStatus(people)
+          console.log('immediated status = ', people['status'])
+          if (people['status'] == 'ok') { // ok = verified
+            // TODO ... Link / Redirect to somepage on Creden
+            console.log('VERIFIED !!! & DELETE COOKIE')
+            Cookies.remove('pendingUser')
+            router.push(`/creden`);
+
+          }
+          //return people['status']
         } catch (e) {
           console.log('Check Status Error: ', e)
         }
     }
+
 
     return (
         <div style={{ margin: "0 auto", maxWidth: "400px" }}>
@@ -113,7 +168,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                         setCardId(e.target.value)
                         checkVerificationStatus(e.target.value)
                     }}
-                />
+                /><p></p>
                 {updateStatus ? <pre>{JSON.stringify(updateStatus, null, 4)}</pre> : null}
                 <label htmlFor="name">Token to Cookie</label>
                 <input
