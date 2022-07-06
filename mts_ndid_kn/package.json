@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "crypto-js": "^4.1.1",
+    "express-rate-limit": "^6.4.0",
+    "express-slow-down": "^1.4.0",
     "js-cookie": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "next": "12.1.6",
+    "next-connect": "^0.12.2",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

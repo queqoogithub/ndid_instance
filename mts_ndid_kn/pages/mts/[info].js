@@ -1,43 +1,11 @@
 // creden - mts - k'num experiment 
-import Link from "next/link";
-import { useReducer, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
 
-function reducer(state, action) {
-    switch (action.type) {
-      case "UPDATE_ID_CARD":
-        return {
-          ...state,
-          card_id: action.payload.card_id
-        };
-      case "UPDATE_NAME":
-        return {
-          ...state,
-          name: action.payload.name
-        };
-      case "UPDATE_CONTENT":
-        return {
-          ...state,
-          content: action.payload.content
-        };
-      case "CLEAR":
-        return initialState;
-      default:
-        return state
-    }
-  }
-    
-const initialState = {
-    card_id: 9999999999999,
-    name: "",
-    content: "",
-}
-
 const User = ({ user_card_id, user_idp_list, user_name }) => {
     const router = useRouter()
-    const [state, dispatch] = useReducer(reducer, initialState)
     const [toVerify, setToVerify] = useState('')
     const [testToken, setTestToken] = useState('')
     const [cardId, setCardId] = useState(0)
@@ -50,22 +18,12 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
     const pendingUserCardId = JSON.parse(pendingUserCardIdasStr) // convert text into a JavaScript object
     console.log('Cookie Pending Ref ID: ', pendingUserCardId['ref_id']) 
-    //const ck = async () => await checkVerificationStatus(pendingUserCardId['card_id'])
     } catch (e) { console.log('error when test to query cookies: ', e) }
 
-    // TODO??? ... useEffect -> check Auth User with Handler function from api
-
-    // let currentDate = new Date()
-    // currentDate.getTime() / 1000
 
     // TODO ... Pending Verification
     useEffect(() => {
-      // try {
-      //   const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
-      //   const pendingUserCardId = JSON.parse(pendingUserCardIdasStr) // convert text into a JavaScript object
-      // } catch (e) { console.log('error when query cookies: ', e) }
       console.log('in useEffect !!!')
-
       if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
       if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
 
@@ -87,14 +45,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         const interval = setInterval(fetchStatusData, 5000) 
       }
       
-
     }, [toVerify])
-
-    const pendingVerificationClock = async (openTimeStamp) => {
-        // const timerId = setInterval(refreshClock, 1000);
-        // await checkVerificationStatus(idCard)
-        pass
-    }
 
     const verify = async () => { // user selected one idp
         const response = await fetch("/api/nc_id", {
@@ -115,21 +66,15 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           throw new Error(`Error: ${response.status}`)
         }
     
-        dispatch({ type: "CLEAR" })
         const pendingUser = await response.json()
         console.log('pending User ===> ', pendingUser)
         Cookies.set('pendingUser', JSON.stringify(pendingUser))
-        
-        // try {
-        // const id = setInterval(() => {
-        //   checkVerificationStatus(3333399999999) // <-- invoke in interval callback
-        // }, 5000);
-        // } catch (e) { console.log('error when interval: ', e) }
 
         return setToVerify(pendingUser)
     }
 
     const checkVerificationStatus = async (id) => {
+
         const response = await fetch(`/api/nc_id/${id}`);
     
         if (!response.ok) {
@@ -147,19 +92,17 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
             router.push(`/creden`);
 
           }
-          //return people['status']
         } catch (e) {
           console.log('Check Status Error: ', e)
         }
     }
-
 
     return (
         <div style={{ margin: "0 auto", maxWidth: "400px" }}>
             <div style={{ display: "flex", flexDirection: "column" }}><p></p>
                 <p>😃 User ID <b> {user_card_id} </b> | {user_name} | IdP List :</p>
                 <pre>{JSON.stringify(user_idp_list, null, 4)}</pre>
-                <label htmlFor="name">Check Verification Status (with ID Card)</label>
+                <label htmlFor="name">Check Verification Status (Ref ID)</label>
                 <input
                     type="number"
                     id="card_id"
@@ -191,30 +134,6 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                     }
                 }
                 /><p></p>
-                {/* <label htmlFor="name">ID Card</label>
-                <input
-                type="number"
-                id="card_id"
-                value={state.card_id}
-                onChange={(e) =>
-                    dispatch({
-                    type: "UPDATE_ID_CARD",
-                    payload: { card_id: e.target.value }
-                    })
-                }
-                />
-                <label htmlFor="name">Name</label>
-                <input
-                type="text"
-                id="name"
-                value={state.name}
-                onChange={(e) =>
-                    dispatch({
-                    type: "UPDATE_NAME",
-                    payload: { name: e.target.value }
-                    })
-                }
-                /> */}
                 <label htmlFor="content">Desired IdP</label>
                 <input
                 type="text"
@@ -247,7 +166,6 @@ export async function getServerSideProps(context) {
     var user_name = ""
 
     // TODO ... GET idp list -> POST verify (Knum service)
-    //const response = await fetch(`http://localhost:3000/api/nc_id/${card_id}`)
     const response = await fetch(`http://localhost:8081/users/${card_id}`)
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`)
@@ -255,15 +173,14 @@ export async function getServerSideProps(context) {
       
     try {
       const userNdidData = await response.json()
-      console.log('User NDID Data = ', userNdidData)
       // TODO ... check id_card, name according to Knum 
       if (userNdidData == null) {
         console.log('Do not have user in NDID database')
       } else {
+        console.log('User NDID Data = ', userNdidData)
         user_name = userNdidData.data['name']
         user_card_id = userNdidData.data['card_id']
         user_idp_list = userNdidData.data['content']
-        console.log('IdP list = ', user_idp_list)
       }
     } catch (e) {
       console.log('Check Status Error: ', e)

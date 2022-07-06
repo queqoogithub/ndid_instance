@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 
 const Persons = ({ users }) => {
   const router = useRouter();
+  const callerUsers = fetch(`/api/nc_id`);
 
   return (
     <div>
