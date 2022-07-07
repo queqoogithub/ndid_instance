@@ -114,17 +114,27 @@ async def add_post(post: PostSchema) -> dict:
 @app.post("/verify", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def bank_verify(post: VerifySchema) -> dict:
     # Todo ... pending time (< 1h)
-    ts = datetime.timestamp(datetime.now())
-    post.id = len(pending_verify_users) + 1
-    pending_verify_users.append(post.dict())
-    return {
-        #"data": "pending verification with ref_id: [" + str(post.id) + "] ipd: ["+ post.selected_bank +"] ... less than 1 hour.",
-        "ref_id": post.id,
-        "card_id": post.card_id,
-        "name": post.name,
-        "selected_bank": post.selected_bank,
-        "ts": ts,
-    }
+    print('check post user: ', check_post_user_card_id(post))
+    if  check_post_user_card_id(post):
+        ts = datetime.timestamp(datetime.now())
+        post.id = len(pending_verify_users) + 1
+        pending_verify_users.append(post.dict())
+        return {
+            #"data": "pending verification with ref_id: [" + str(post.id) + "] ipd: ["+ post.selected_bank +"] ... less than 1 hour.",
+            "ref_id": post.id,
+            "card_id": post.card_id,
+            "name": post.name,
+            "selected_bank": post.selected_bank,
+            "ts": ts,
+            "status": "accept",
+        }
+    return { "status": "reject", "data": "User do not exist in NDID database", }
+
+def check_post_user_card_id(data): # posts act as ndid users
+    for user in posts:
+        if user['card_id'] == data.card_id:
+            return True    
+    return False
 
 @app.put("/verify/update/{id}", tags=["pending_verify_users"])
 async def update_status(id: int) -> dict:
