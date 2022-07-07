@@ -76,6 +76,7 @@ handler.post(async (req, res) => {
         })
 
     const data = await pure_data.json()
+    
     console.log("to verify user => ", data)
     return res.status(200).json( data )
 })

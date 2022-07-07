@@ -44,6 +44,7 @@ export default function Home() {
  
   //console.log('Creden Test Token -> Cookie => ', Cookies.get('credenToken'))
   const router = useRouter();
+  const { query } = useRouter();
 
   //  >>> Mockup: Creden Post (User Data) to MTS <<< 
   const postUserData = async () => { 
@@ -114,11 +115,11 @@ export default function Home() {
   }
 
   return (
-    <div style={{ margin: "0 auto", maxWidth: "400px" }}>
+    <div style={{ margin: "0 auto", maxWidth: "400px" }} className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
       <div style={{ display: "flex", flexDirection: "column" }}><p></p>
-        <h3>🦄 <b>Creden Form Instance</b></h3>
-        <label htmlFor="name">Token to Cookie</label>
-        <input
+        <h3 className="text-lg py-3">🦄 <b>Creden Form Instance</b></h3>
+        <label className="py-2" htmlFor="name">Token to Cookie</label>
+        <input className="rounded-md border p-1 text-blue-600"
           type="text"
           id="test_token"
           value={testToken}
@@ -128,8 +129,8 @@ export default function Home() {
             }
           }
         /><p></p>
-        <label htmlFor="name">ID Card</label>
-        <input
+        <label htmlFor="name" className="py-2">ID Card (Require)</label>
+        <input className="rounded-md border p-1 text-slate-900"
           type="number"
           id="card_id"
           value={state.card_id}
@@ -140,11 +141,11 @@ export default function Home() {
             })
           }
         />
-        <label htmlFor="name">Name</label>
-        <input
+        <label className="py-2" htmlFor="name">Name</label>
+        <input className="rounded-md border p-1 text-slate-900"
           type="text"
           id="name"
-          value={state.name}
+          value={state.firstname}
           onChange={(e) =>
             dispatch({
               type: "UPDATE_NAME",
@@ -152,8 +153,8 @@ export default function Home() {
             })
           }
         />
-        <label htmlFor="name">Application Type</label>
-        <input
+        <label className="py-2 " htmlFor="name">Application Type</label>
+        <input className="rounded-md border p-1 text-slate-900"
           type="text"
           id="apptype"
           value={state.apptype}
@@ -165,14 +166,17 @@ export default function Home() {
           }
         />
       </div>
-      <div
-        style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}
-      >
-        <button onClick={passUserInfo}>TO MTS PAGE</button>
-      </div>
-      <div>Data:</div>
-      {data ? <pre>{JSON.stringify(data, null, 4)}</pre> : null}
+      
+        <button className="my-8 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-full" onClick={passUserInfo}>ยืนยันตัวตน NDID</button>
+      
+      <p className="text-3xl font-bold underline py-4"></p>
+      { query.status=='verified' ? <><div>Verification Status:</div><pre><b>🟢 { query.status }</b></pre></> : null }
+      { query.status=='reject' ? <><div>Verification Status:</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
+      { query.status=='204' ? <><div>Verification Status:</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
 
+      <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
+          Powered by{' '}BDEV
+      </footer>
     </div>
   );
 }

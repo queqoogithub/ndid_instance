@@ -16,7 +16,7 @@ const getIP = request =>
 
 export const getRateLimitMiddlewares = ({
   limit = 10, // limit each IP to 10 requests per windowMs
-  windowMs = 30 * 1000, // 30 seconds
+  windowMs = 60 * 1000, // 60 seconds
   delayAfter = Math.round(10 / 2),
   delayMs = 500,
 } = {}) => [
@@ -27,7 +27,7 @@ export const getRateLimitMiddlewares = ({
 const middlewares = getRateLimitMiddlewares()
 
 async function applyRateLimit(request, response, next) {
-  console.log('aaaaaaaaaaa')
+  //console.log('apply rate-limit middleware')
   await Promise.all(
     middlewares
       .map(applyMiddleware)

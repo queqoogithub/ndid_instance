@@ -32,6 +32,8 @@ handler.get(async (req, res) => {
   const { data }  = await pure_data.json()
   const check_user = await data.find(value => value.id == ref_id);
   
+  // TODO ... respone data to Creden ... by Encrypt(data) or Post(data) and then @Frontend direct to Creden page .
+
   return res.status(200).json(check_user);
 });
 

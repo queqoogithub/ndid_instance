@@ -13,6 +13,12 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const [updateStatus, setUpdateStatus] = useState('')
     const [pendingTime, setPendingTime] = useState(0)
 
+    useEffect(() => {
+      if (user_card_id == 0) { 
+        router.push(`/creden?status=${204}`); 
+      }
+    }, [])
+
     // test :::: Get & Query Cookie
     try {
     const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
@@ -68,7 +74,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     
         const pendingUser = await response.json()
         console.log('pending User ===> ', pendingUser)
-        Cookies.set('pendingUser', JSON.stringify(pendingUser))
+        Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
 
         return setToVerify(pendingUser)
     }
@@ -85,25 +91,32 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           console.log('Check & Update Status => ', people)
           setUpdateStatus(people)
           console.log('immediated status = ', people['status'])
-          if (people['status'] == 'ok') { // ok = verified
-            // TODO ... Link / Redirect to somepage on Creden
+          if (people['status'] == 'verified') { // ok = verified
             console.log('VERIFIED !!! & DELETE COOKIE')
             Cookies.remove('pendingUser')
-            router.push(`/creden`);
+            //router.push(`/creden`);
+            router.push(`/creden?status=${people['status']}`);
 
           }
+          if (people['status'] == 'reject') {
+            console.log('REJECT !!! & DELETE COOKIE')
+            // TODO ... msg for reject status
+            Cookies.remove('pendingUser')
+            router.push(`/creden?status=${people['status']}`);
+          }
+
         } catch (e) {
           console.log('Check Status Error: ', e)
         }
     }
 
     return (
-        <div style={{ margin: "0 auto", maxWidth: "400px" }}>
+        <div style={{ margin: "0 auto", maxWidth: "400px" }} className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
             <div style={{ display: "flex", flexDirection: "column" }}><p></p>
                 <p>😃 User ID <b> {user_card_id} </b> | {user_name} | IdP List :</p>
                 <pre>{JSON.stringify(user_idp_list, null, 4)}</pre>
-                <label htmlFor="name">Check Verification Status (Ref ID)</label>
-                <input
+                <label className="py-2" htmlFor="name">Check Verification Status (Ref ID)</label>
+                <input className="rounded-md border p-1 text-blue-600"
                     type="number"
                     id="card_id"
                     value = {cardId}
@@ -113,8 +126,8 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                     }}
                 /><p></p>
                 {updateStatus ? <pre>{JSON.stringify(updateStatus, null, 4)}</pre> : null}
-                <label htmlFor="name">Token to Cookie</label>
-                <input
+                <label className="py-2" htmlFor="name">Token to Cookie</label>
+                <input className="rounded-md border p-1 text-blue-600"
                 type="text"
                 id="test_token"
                 value={testToken}
@@ -124,8 +137,8 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                     }
                 }
                 />
-                <label htmlFor="name">Pending Verification <b>Test Time</b> (ms.)</label>
-                <input
+                <label className="py-2" htmlFor="name">Pending Verification <b>Test Time</b> (ms.)</label>
+                <input className="rounded-md border p-1 text-blue-600"
                 type="number"
                 id="test_pending_time"
                 value={pendingTime}
@@ -134,8 +147,8 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                     }
                 }
                 /><p></p>
-                <label htmlFor="content">Desired IdP</label>
-                <input
+                <label className="py-2" htmlFor="content">Desired IdP</label>
+                <input className="rounded-md border p-1 text-blue-600"
                 type="text"
                 id="content"
                 value={desiredIpd}
@@ -145,9 +158,14 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 />
             </div>
             <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}>
-                <button onClick={verify}>VERIFY</button>
+                <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-400 text-[#013976] font-bold py-2 px-4 rounded-md" onClick={verify}>ย้อนกลับ / ยกเลิก</button>
+                <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-400 text-[#013976] font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button>
             </div>
             {toVerify ? <><p>To verify: </p><pre>{JSON.stringify(toVerify, null, 4)}</pre></> : null}
+
+            <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
+              Powered by{' '}BDEV
+          </footer>
         </div>
     )
 }

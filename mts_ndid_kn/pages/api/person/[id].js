@@ -5,6 +5,7 @@ export default function handler(request, response) {
 
   if (method === "GET") {
     const { id } = request.query;
+    console.log('query >>>>>> ', request.query)
 
     const person = data.find((person) => person.id.toString() === id);
 

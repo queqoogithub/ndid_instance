@@ -137,7 +137,7 @@ def check_post_user_card_id(data): # posts act as ndid users
     return False
 
 @app.put("/verify/update/{id}", tags=["pending_verify_users"])
-async def update_status(id: int) -> dict:
+async def update_status(id: int, status: str) -> dict:
     if id > len(pending_verify_users):
         return {
             "error": "No such user with the supplied ID."
@@ -151,7 +151,9 @@ async def update_status(id: int) -> dict:
             print('pending_verify_users id: ', pending_verify_users.index(user))
             print('pending_verify_users: ', pending_verify_users[pending_verify_users.index(user)])
             print('pending_verify_users status: ', pending_verify_users[pending_verify_users.index(user)]['status'])
-            pending_verify_users[pending_verify_users.index(user)]['status'] = 'ok'
+            pending_verify_users[pending_verify_users.index(user)]['status'] = status #'ok'
+            return { "id": id, "status": status, }
+    return { "error": "User Ref ID did not ever send verify yet" }
             
 
 # todo ... verify simulation ----------------------------------------------- end #
