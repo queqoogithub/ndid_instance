@@ -1,4 +1,5 @@
 // creden - mts - k'num experiment 
+import CountTimer from '../../components/CountTimer'; // timer
 import { useState, useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
@@ -9,9 +10,10 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const [toVerify, setToVerify] = useState('')
     const [testToken, setTestToken] = useState('')
     const [cardId, setCardId] = useState(0)
-    const [desiredIpd, setDsiredIdp] = useState('')
+    const [desiredIpd, setDesiredIdp] = useState('')
     const [updateStatus, setUpdateStatus] = useState('')
     const [pendingTime, setPendingTime] = useState(0)
+    const [startTS, setStartTs] = useState()
 
     useEffect(() => {
       if (user_card_id == 0) { 
@@ -41,6 +43,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           let currentDate = new Date()
           console.log('Current time: ', currentDate.getTime() / 1000) 
           console.log('Init time: ', pendingUserCardId['ts'])
+          setStartTs(pendingUserCardId['ts'])
           console.log('Counting time: ', (currentDate.getTime() / 1000) - pendingUserCardId['ts'])
 
           await checkVerificationStatus(pendingUserCardId['ref_id'])
@@ -153,9 +156,25 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 id="content"
                 value={desiredIpd}
                 onChange={(e) => 
-                    setDsiredIdp(e.target.value)
+                  setDesiredIdp(e.target.value)
                 }
                 />
+
+                {/* {user_idp_list.map(idp => (
+                  <>
+                  <select 
+                    //value={desiredIpd}
+                    onChange={(e) => 
+                      setDesiredIdp(e.target.value)
+                    }
+                  >
+                  <div key={idp.key}>
+                    <option value={idp}> IdP: {idp} </option>
+                  </div>
+                  </select>
+                  </>
+                ))} */}
+
             </div>
             <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center" }}>
                 <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-400 text-[#013976] font-bold py-2 px-4 rounded-md" onClick={verify}>ย้อนกลับ / ยกเลิก</button>
@@ -166,6 +185,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
             <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
               Powered by{' '}BDEV
           </footer>
+          <CountTimer startTs={ startTS } />
         </div>
     )
 }
@@ -182,6 +202,8 @@ export async function getServerSideProps(context) {
     var user_idp_list = []
     var user_card_id = 0
     var user_name = ""
+
+    // TODO ... check user blacklist -> GET amlo (Knum service)
 
     // TODO ... GET idp list -> POST verify (Knum service)
     const response = await fetch(`http://localhost:8081/users/${card_id}`)

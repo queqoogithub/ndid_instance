@@ -1,4 +1,6 @@
 import Link from "next/link";
+import CountdownTimer from '../components/CountdownTimer'; // test
+import CountTimer from '../components/CountTimer'; // test
 import { useReducer, useState } from "react";
 import Cookies from 'js-cookie';
 import CryptoJS from 'crypto-js'
@@ -170,13 +172,14 @@ export default function Home() {
         <button className="my-8 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-full" onClick={passUserInfo}>ยืนยันตัวตน NDID</button>
       
       <p className="text-3xl font-bold underline py-4"></p>
-      { query.status=='verified' ? <><div>Verification Status:</div><pre><b>🟢 { query.status }</b></pre></> : null }
-      { query.status=='reject' ? <><div>Verification Status:</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
-      { query.status=='204' ? <><div>Verification Status:</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
+      { query.status=='verified' ? <><div>Verification Status</div><pre><b>🟢 { query.status }</b></pre></> : null }
+      { query.status=='reject' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
+      { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
 
       <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
           Powered by{' '}BDEV
       </footer>
+      <CountTimer/>
     </div>
   );
 }
