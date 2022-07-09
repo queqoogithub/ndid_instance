@@ -177,7 +177,7 @@ export default function Home() {
       { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
 
       <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
-          Powered by{' '}BDEV
+      ©️ Powered by{' '}BDEV
       </footer>
       <CountTimer/>
     </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export default function CountTimer({ startTs=1657266900.123 }) {
+export default function CountTimer({ startTs }) {
 
     // const [currentDate, setCurrentDate] = useState(new Date())
     // useEffect(() => setCurrentDate(new Date()), [])
@@ -43,11 +43,14 @@ export default function CountTimer({ startTs=1657266900.123 }) {
         }
 
         timerComponents.push(
-            <span>
-                {timeLeft[interval]} {interval}{" "}
+            <span key={interval} className='mx-5 px-4 py-2 text-[65px] font-medium bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 ring-2 ring-blue-500/50 rounded-lg'>
+                {/* {timeLeft[interval]} {interval}{" "} */}
+                {timeLeft[interval]}
             </span>
         )
     })
 
-    return (<> {timerComponents.length? timerComponents : <span> 🚫 Time's up! 🚫 </span>}</>)
+    //console.log('timerComponents = ', timerComponents.length)
+
+    return (<> {timerComponents.length ? timerComponents : <span> 🚫 Time's up! 🚫 </span>} </>)
 }
