@@ -1,5 +1,6 @@
 // creden - mts - k'num experiment 
 import CountTimer from '../../components/CountTimer'; // timer
+import IdpList from '../../components/IdpList'; // idp list
 import { useState, useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
@@ -205,43 +206,60 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 : null}
                 
                 {/* idp list component */}
-                { !Cookies.get('pendingUser') ?
+                {/* { !Cookies.get('pendingUser') ?
                 <>
-                <div className='h-20 w-96 mb-10 py-2 px-2 text-center'>กรูณาเลือกผู้ให้บริการยืนยันตัวตนที่ท่านเคยลงทะเบียนไว้ เพื่อยืนยันตัวตน ทั้งนี้ท่านจะต้องมีโมบายแอปพลิเคชั่นของผู้ให้บริการดังกล่าว</div>
-                <div className='h-20 w-96 mb-10 py-3 px-2 rounded-md bg-white text-black text-center'>ผู้ให้บริการที่ท่านได้ลงทะเบียน NDID ไว้แล้ว สามารถยืนยันตัวตนได้ทันที</div>
-                <>
-                { idpIconSelected.length <= 4 ?
-                <div className="flex justify-center">
-                  { Object.values(idpIconSelected).map((value, index) =>
-                  <div key={value.name} > 
-                    <img className="mx-1 my-1 h-20 w-20"
-                      src={value.image} 
-                      alt={value.name} 
-                      onClick={async () => setDesiredIdp(value.name)}
-                    /> 
+                  <div className='h-20 w-96 mb-10 py-2 px-2 text-center'>กรูณาเลือกผู้ให้บริการยืนยันตัวตนที่ท่านเคยลงทะเบียนไว้ เพื่อยืนยันตัวตน ทั้งนี้ท่านจะต้องมีโมบายแอปพลิเคชั่นของผู้ให้บริการดังกล่าว</div>
+                  <div className='h-20 w-96 mb-10 py-3 px-2 rounded-md bg-white text-black text-center'>ผู้ให้บริการที่ท่านได้ลงทะเบียน NDID ไว้แล้ว สามารถยืนยันตัวตนได้ทันที</div>
+                    <>
+                      { idpIconSelected.length <= 4 ?
+                      <div className="flex justify-center">
+                        { Object.values(idpIconSelected).map((value, index) =>
+                        <div key={value.name} > 
+                          <img className="mx-1 my-1 h-20 w-20"
+                            src={value.image} 
+                            alt={value.name} 
+                            onClick={async () => setDesiredIdp(value.name)}
+                          /> 
+                        </div>
+                        )}
+                      </div>
+                      :
+                      <div className="grid grid-cols-4 justify-center">
+                        { Object.values(idpIconSelected).map((value, index) =>
+                        <div key={value.name} > 
+                          <img className="mx-1 my-1 h-20 w-20"
+                            src={value.image} 
+                            alt={value.name} 
+                            onClick={async () => setDesiredIdp(value.name)}
+                          /> 
+                        </div>
+                        )}
+                      </div>
+                      }
+                    </>
+                  <div className='mt-8'>
+                    <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
+                    <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button>
                   </div>
-                  )}
-                </div>
-                :
-                <div className="grid grid-cols-4 justify-center">
-                  { Object.values(idpIconSelected).map((value, index) =>
-                  <div key={value.name} > 
-                    <img className="mx-1 my-1 h-20 w-20"
-                      src={value.image} 
-                      alt={value.name} 
-                      onClick={async () => setDesiredIdp(value.name)}
-                    /> 
-                  </div>
-                  )}
-                </div>
-                }
-                </>
-                <div className='mt-8'>
-                  <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                  <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button>
-                </div>
                 </> 
-                : <div className='grid justify-items-center'>
+                : 
+                <div className='grid justify-items-center'>
+                  <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
+                    ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['ref_id']} ]</p> 
+                  </div>
+                  <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
+                    กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
+                  </div>
+                  <p className='my-14'><CountTimer startTs={ startTS } /></p>
+                  <button className="my-8 mx-1 bg-[#f53052] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
+                </div>
+                } */}
+                
+                {/* NOTE: hello test idp list component! */}
+                { !Cookies.get('pendingUser') ? 
+                    <IdpList idpIconSelected={idpIconSelected} setDesiredIdp={setDesiredIdp} verify={verify} /> 
+                    : 
+                    <div className='grid justify-items-center'>
                     <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
                       ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['ref_id']} ]</p> 
                     </div>
@@ -250,7 +268,8 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                     </div>
                     <p className='my-14'><CountTimer startTs={ startTS } /></p>
                     <button className="my-8 mx-1 bg-[#f53052] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                  </div>}
+                  </div>
+                }
 
             </div>
 
@@ -259,7 +278,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
             <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
             ©️ Powered by{' '}BDEV
             </footer>
-            
+          
         </div>
     )
 }

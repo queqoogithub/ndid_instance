@@ -43,7 +43,7 @@ export default function CountTimer({ startTs }) {
         }
 
         timerComponents.push(
-            <span key={interval} className='mx-5 px-4 py-2 text-[65px] font-medium bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 ring-2 ring-blue-500/50 rounded-lg'>
+            <span key={interval} className='mx-5 px-4 py-2 text-[65px] font-medium bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 ring-2 ring-blue-200/50 rounded-lg'>
                 {/* {timeLeft[interval]} {interval}{" "} */}
                 {timeLeft[interval]}
             </span>
