@@ -23,10 +23,10 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
                         )}
                     </div>
                     :
-                    <div className="grid grid-cols-4 justify-center">
+                    <div className="grid grid-cols-4 justify-center ">
                         {Object.values(idpIconSelected).map((value, index) =>
                             <div key={value.name} >
-                                <img className="mx-1 my-1 h-20 w-20"
+                                <img className="mx-1 my-1 h-20 w-20 hover:contrast-150"
                                     src={value.image}
                                     alt={value.name}
                                     onClick={async () => setDesiredIdp(value.name)}

@@ -117,11 +117,10 @@ export default function Home() {
   }
 
   return (
-    <div className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
+    <div className="flex min-h-screen flex-col font-Prompt bg-[#013976] items-center py-10 text-gray-50">
       <div className='grid justify-items-center'><p></p>
-        <div className=' border-double'>
-            <img className="scale-50 rounded " src="/mts_logo.jpg" alt="mts_logo"/>
-        </div>
+        <img className="contrast-125 scale-50 " src="/mts_logo.jpg" alt="mts_logo"/>
+        
         <h3 className="text-lg py-3">🦄 <b>Creden Form Instance</b></h3>
         <label className="py-2" htmlFor="name">Token to Cookie</label>
         <input className="rounded-md border p-1 text-blue-600"

@@ -155,7 +155,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         <div className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
             <div className='grid justify-items-center'>
                 <div className=''>
-                    <img className="scale-60 " src="/mts_logo.jpg" alt="mts_logo"/>
+                    <img className="contrast-125 scale-75 rounded-2xl " src="/mts_logo.jpg" alt="mts_logo"/>
                 </div>
                 <Switch
                   checked={testToggle}
