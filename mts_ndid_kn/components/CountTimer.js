@@ -5,6 +5,8 @@ export default function CountTimer({ startTs }) {
     // const [currentDate, setCurrentDate] = useState(new Date())
     // useEffect(() => setCurrentDate(new Date()), [])
     
+    //console.log('start counting with time: ', startTs)
+
     const currentDate = Date.now() //new Date().getTime()
 
     const calculateTime = () => {
@@ -50,7 +52,7 @@ export default function CountTimer({ startTs }) {
         )
     })
 
-    //console.log('timerComponents = ', timerComponents.length)
+    // /console.log('timerComponents = ', timerComponents)
 
     return (<> {timerComponents.length ? timerComponents : <span> 🚫 Time's up! 🚫 </span>} </>)
 }

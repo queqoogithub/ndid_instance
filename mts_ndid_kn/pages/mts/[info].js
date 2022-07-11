@@ -37,36 +37,45 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
 
     // TODO ... Pending Verification
     useEffect(() => {
-      //console.log('in useEffect !!!')
+      console.log('in useEffect !!!')
       if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
       if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
 
+      // test 
+      try {
+        var pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+        var pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
+        setStartTs(pendingUserCardId['ts'])
+      } catch (e) { console.log('error @fetchStatusData: ', e) }
+
       const fetchStatusData = async () => {
-        try {
-          const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
-          const pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
-          //console.log('Pending User JSON',  Cookies.get('pendingUser'))
-          //const pendingUserCardId = JSON.stringify(pendingUserCardIdasStr)
+        await checkVerificationStatus(toVerify['ref_id']) // test
+        // try {
+        //   const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+        //   const pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
+        //   //console.log('Pending User JSON',  Cookies.get('pendingUser'))
+        //   //const pendingUserCardId = JSON.stringify(pendingUserCardIdasStr)
 
-          let currentDate = new Date()
-          // console.log('Current time: ', currentDate.getTime() / 1000) 
-          // console.log('Init time: ', pendingUserCardId['ts'])
-          setStartTs(pendingUserCardId['ts'])
-          //console.log('Counting time: ', (currentDate.getTime() / 1000) - pendingUserCardId['ts'])
+        //   let currentDate = new Date()
+        //   // console.log('Current time: ', currentDate.getTime() / 1000) 
+        //   // console.log('Init time: ', pendingUserCardId['ts'])
+        //   setStartTs(pendingUserCardId['ts'])
+        //   //console.log('Counting time: ', (currentDate.getTime() / 1000) - pendingUserCardId['ts'])
 
-          await checkVerificationStatus(pendingUserCardId['ref_id'])
-        } catch (e) { console.log('error @fetchStatusData: ', e) }
+        //   await checkVerificationStatus(pendingUserCardId['ref_id'])
+        // } catch (e) { console.log('error @fetchStatusData: ', e) }
       }
 
       // if (Cookies.get('pendingUser')) { 
       //   const interval = setInterval(fetchStatusData, 5000)
       // }
       const interval = setInterval(async() => {
-          await fetchStatusData()
+          
           if (!Cookies.get('pendingUser')) {
             clearInterval(interval);
           }
-      }, 5000) 
+          await fetchStatusData()
+      }, 15000) 
       
     }, [toVerify])
 
@@ -93,14 +102,18 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         console.log('pending User ===> ', pendingUser)
         Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
 
-        return setToVerify(pendingUser)
+        //await checkVerificationStatus(pendingUser['ref_id'])
+        setToVerify(pendingUser)
+
+        //return setToVerify(pendingUser)
     }
 
     const checkVerificationStatus = async (id) => {
         const response = await fetch(`/api/nc_id/${id}`);
     
         if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
+          //throw new Error(`Error: ${response.status}`);
+          console.log('>>>>>>>>>>>>>>>>>> respone error @checkVerificationStatus: ', response.status)
         }
         try {
           const people = await response.json()
@@ -109,6 +122,9 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           if (people['status'] == 'verified') { // ok = verified
             console.log('VERIFIED !!! & DELETE COOKIE')
             Cookies.remove('pendingUser')
+
+            setToVerify('')
+
             //router.push(`/creden`);
             router.push(`/creden?status=${people['status']}`);
 
@@ -117,6 +133,9 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
             console.log('REJECT !!! & DELETE COOKIE')
             // TODO ... msg for reject status
             Cookies.remove('pendingUser')
+
+            setToVerify('')
+
             router.push(`/creden?status=${people['status']}`);
           }
 
@@ -135,7 +154,9 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     return (
         <div className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
             <div className='grid justify-items-center'>
-                
+                <div className=''>
+                    <img className="scale-60 " src="/mts_logo.jpg" alt="mts_logo"/>
+                </div>
                 <Switch
                   checked={testToggle}
                   onChange={setTestToggle}
@@ -155,7 +176,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 {testToggle ? 
                   <div className='grid justify-items-center mb-8'>
                   <p className='mb-8'>😃 User ID <b> {user_card_id} </b> | {user_name} </p>
-                  <pre>{JSON.stringify(user_idp_list, null, 4)}</pre>
+                  <span>{JSON.stringify(user_idp_list, null, 4)}</span><br/>
                   <label className="py-2" htmlFor="name">Check Verification Status (Ref ID)</label>
                   <input className="rounded-md border p-1 text-blue-600"
                       type="number"
@@ -267,7 +288,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                       กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
                     </div>
                     <p className='my-14'><CountTimer startTs={ startTS } /></p>
-                    <button className="my-8 mx-1 bg-[#f53052] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
+                    <button className="my-8 mx-1 bg-[#ef4444] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
                   </div>
                 }
 

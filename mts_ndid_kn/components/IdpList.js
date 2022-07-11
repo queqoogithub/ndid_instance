@@ -7,7 +7,7 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
     
     return (
         <>
-            <div className='h-20 w-96 mb-10 py-2 px-2 text-center'>กรูณาเลือกผู้ให้บริการยืนยันตัวตนที่ท่านเคยลงทะเบียนไว้ เพื่อยืนยันตัวตน ทั้งนี้ท่านจะต้องมีโมบายแอปพลิเคชั่นของผู้ให้บริการดังกล่าว</div>
+            <div className='h-20 w-96 mb-10 py-2 px-1 text-center'>กรูณาเลือกผู้ให้บริการยืนยันตัวตนที่ท่านเคยลงทะเบียนไว้ เพื่อยืนยันตัวตน ทั้งนี้ ท่านจะต้องมีโมบายแอปพลิเคชั่น ของผู้ให้บริการดังกล่าว</div>
             <div className='h-20 w-96 mb-10 py-3 px-2 rounded-md bg-white text-black text-center'>ผู้ให้บริการที่ท่านได้ลงทะเบียน NDID ไว้แล้ว สามารถยืนยันตัวตนได้ทันที</div>
             <>
                 {idpIconSelected.length <= 4 ?

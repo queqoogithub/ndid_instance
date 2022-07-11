@@ -117,8 +117,11 @@ export default function Home() {
   }
 
   return (
-    <div style={{ margin: "0 auto", maxWidth: "400px" }} className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
-      <div style={{ display: "flex", flexDirection: "column" }}><p></p>
+    <div className="font-Prompt bg-[#013976] flex min-h-screen flex-col items-center py-10 text-gray-50">
+      <div className='grid justify-items-center'><p></p>
+        <div className=' border-double'>
+            <img className="scale-50 rounded " src="/mts_logo.jpg" alt="mts_logo"/>
+        </div>
         <h3 className="text-lg py-3">🦄 <b>Creden Form Instance</b></h3>
         <label className="py-2" htmlFor="name">Token to Cookie</label>
         <input className="rounded-md border p-1 text-blue-600"
@@ -176,10 +179,9 @@ export default function Home() {
       { query.status=='reject' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
       { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
 
-      <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
+      <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2] ">
       ©️ Powered by{' '}BDEV
       </footer>
-      <CountTimer/>
     </div>
   );
 }
