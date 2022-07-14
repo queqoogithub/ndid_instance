@@ -1,6 +1,5 @@
-// creden - mts - k'num experiment 
-import CountTimer from '../../components/CountTimer'; // timer
-import IdpList from '../../components/IdpList'; // idp list
+import CountTimer from '../../components/CountTimer'; 
+import IdpList from '../../components/IdpList'; 
 import { useState, useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
@@ -19,7 +18,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     const [startTS, setStartTs] = useState()
     const [testToggle, setTestToggle] = useState(false)
 
-    console.log('idp was selected: ', desiredIpd)
+    //console.log('idp was selected: ', desiredIpd)
 
     useEffect(() => {
       if (user_card_id == 0) { 
@@ -27,21 +26,12 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
       }
     }, [])
 
-    // test :::: Get & Query Cookie
-    // try {
-    // const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
-    // const pendingUserCardId = JSON.parse(pendingUserCardIdasStr) // convert text into a JavaScript object
-    // console.log('Cookie Pending Ref ID: ', pendingUserCardId['ref_id']) 
-    // } catch (e) { console.log('error when test to query cookies: ', e) }
-
-
-    // TODO ... Pending Verification
     useEffect(() => {
-      console.log('in useEffect !!!')
+      console.log('in useEffect !!!!!!!!!!!!!!')
       if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
       if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
 
-      // test 
+      // get / perform cookie data  
       try {
         var pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
         var pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
@@ -49,37 +39,18 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
       } catch (e) { console.log('error @fetchStatusData: ', e) }
 
       const fetchStatusData = async () => {
-        await checkVerificationStatus(toVerify['ref_id']) // test
-        // try {
-        //   const pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
-        //   const pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
-        //   //console.log('Pending User JSON',  Cookies.get('pendingUser'))
-        //   //const pendingUserCardId = JSON.stringify(pendingUserCardIdasStr)
-
-        //   let currentDate = new Date()
-        //   // console.log('Current time: ', currentDate.getTime() / 1000) 
-        //   // console.log('Init time: ', pendingUserCardId['ts'])
-        //   setStartTs(pendingUserCardId['ts'])
-        //   //console.log('Counting time: ', (currentDate.getTime() / 1000) - pendingUserCardId['ts'])
-
-        //   await checkVerificationStatus(pendingUserCardId['ref_id'])
-        // } catch (e) { console.log('error @fetchStatusData: ', e) }
+        await checkVerificationStatus(toVerify['ref_id']) 
       }
 
-      // if (Cookies.get('pendingUser')) { 
-      //   const interval = setInterval(fetchStatusData, 5000)
-      // }
       const interval = setInterval(async() => {
-          
           if (!Cookies.get('pendingUser')) {
             clearInterval(interval);
           }
           await fetchStatusData()
       }, 15000) 
-      
     }, [toVerify])
 
-    const verify = async () => { // user selected one idp
+    const verify = async (idp_name) => { // user selected one idp
         const response = await fetch("/api/nc_id", {
           method: "POST",
           headers: {
@@ -90,30 +61,28 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           body: JSON.stringify({
             card_id: user_card_id,
             name: user_name,
-            content: desiredIpd,
+            //content: desiredIpd,
+            content: idp_name,
         })
         })
       
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
         }
-    
         const pendingUser = await response.json()
         console.log('pending User ===> ', pendingUser)
         Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
-
-        //await checkVerificationStatus(pendingUser['ref_id'])
         setToVerify(pendingUser)
-
         //return setToVerify(pendingUser)
     }
 
     const checkVerificationStatus = async (id) => {
+      if (Cookies.get('pendingUser')) {
         const response = await fetch(`/api/nc_id/${id}`);
     
         if (!response.ok) {
           //throw new Error(`Error: ${response.status}`);
-          console.log('>>>>>>>>>>>>>>>>>> respone error @checkVerificationStatus: ', response.status)
+          console.log('respone error @checkVerificationStatus: ', response.status)
         }
         try {
           const people = await response.json()
@@ -131,6 +100,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           }
           if (people['status'] == 'reject') {
             console.log('REJECT !!! & DELETE COOKIE')
+
             // TODO ... msg for reject status
             Cookies.remove('pendingUser')
 
@@ -142,6 +112,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         } catch (e) {
           console.log('Check Status Error: ', e)
         }
+      }
     }
 
     const idpIconSelected = user_idp_list
@@ -226,56 +197,6 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 </div>
                 : null}
                 
-                {/* idp list component */}
-                {/* { !Cookies.get('pendingUser') ?
-                <>
-                  <div className='h-20 w-96 mb-10 py-2 px-2 text-center'>กรูณาเลือกผู้ให้บริการยืนยันตัวตนที่ท่านเคยลงทะเบียนไว้ เพื่อยืนยันตัวตน ทั้งนี้ท่านจะต้องมีโมบายแอปพลิเคชั่นของผู้ให้บริการดังกล่าว</div>
-                  <div className='h-20 w-96 mb-10 py-3 px-2 rounded-md bg-white text-black text-center'>ผู้ให้บริการที่ท่านได้ลงทะเบียน NDID ไว้แล้ว สามารถยืนยันตัวตนได้ทันที</div>
-                    <>
-                      { idpIconSelected.length <= 4 ?
-                      <div className="flex justify-center">
-                        { Object.values(idpIconSelected).map((value, index) =>
-                        <div key={value.name} > 
-                          <img className="mx-1 my-1 h-20 w-20"
-                            src={value.image} 
-                            alt={value.name} 
-                            onClick={async () => setDesiredIdp(value.name)}
-                          /> 
-                        </div>
-                        )}
-                      </div>
-                      :
-                      <div className="grid grid-cols-4 justify-center">
-                        { Object.values(idpIconSelected).map((value, index) =>
-                        <div key={value.name} > 
-                          <img className="mx-1 my-1 h-20 w-20"
-                            src={value.image} 
-                            alt={value.name} 
-                            onClick={async () => setDesiredIdp(value.name)}
-                          /> 
-                        </div>
-                        )}
-                      </div>
-                      }
-                    </>
-                  <div className='mt-8'>
-                    <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                    <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button>
-                  </div>
-                </> 
-                : 
-                <div className='grid justify-items-center'>
-                  <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
-                    ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['ref_id']} ]</p> 
-                  </div>
-                  <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
-                    กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
-                  </div>
-                  <p className='my-14'><CountTimer startTs={ startTS } /></p>
-                  <button className="my-8 mx-1 bg-[#f53052] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                </div>
-                } */}
-                
                 {/* NOTE: hello test idp list component! */}
                 { !Cookies.get('pendingUser') ? 
                     <IdpList idpIconSelected={idpIconSelected} setDesiredIdp={setDesiredIdp} verify={verify} /> 
@@ -306,18 +227,18 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
 
 export async function getServerSideProps(context) {
     const { info } = await context.params
-    console.log('encrypt info from server = ', info)
+    //console.log('encrypt info from server = ', info)
     const password = 'secure secret key' // TODO ... env
     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
     const decryptedObject = decrypt(info, password)
-    console.log('from server decrypt = ', decryptedObject)
-    console.log('card_id from server decrypt = ', decryptedObject.info['card_id'])
+    //console.log('from server decrypt = ', decryptedObject)
+    //console.log('card_id from server decrypt = ', decryptedObject.info['card_id'])
     const card_id = decryptedObject.info['card_id']
     var user_idp_list = []
     var user_card_id = 0
     var user_name = ""
 
-    // TODO ... check user blacklist -> GET amlo (Knum service)
+    // TODO ... check user blacklist -> GET AMLO (Knum service)
 
     // TODO ... GET idp list -> POST verify (Knum service)
     const response = await fetch(`http://localhost:8081/users/${card_id}`)

@@ -1,6 +1,4 @@
 import Link from "next/link";
-import CountdownTimer from '../components/CountdownTimer'; // test
-import CountTimer from '../components/CountTimer'; // test
 import { useReducer, useState } from "react";
 import Cookies from 'js-cookie';
 import CryptoJS from 'crypto-js'
@@ -72,25 +70,25 @@ export default function Home() {
   };
 
   // test cryptoJS
-//   const testCryptoJS = async () => {
-//     //var CryptoJS = require("crypto-js");
+  //   const testCryptoJS = async () => {
+  //     //var CryptoJS = require("crypto-js");
 
-//     const password = 'secure secret key'
-//     const encrypt = (content, password) => CryptoJS.AES.encrypt(JSON.stringify({ content }), password).toString()
-//     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
+  //     const password = 'secure secret key'
+  //     const encrypt = (content, password) => CryptoJS.AES.encrypt(JSON.stringify({ content }), password).toString()
+  //     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
 
-//     // Encrypt
-//     const encryptedString = encrypt('This is a string', password)
-//     const encryptedObject = encrypt({ test: 'This is an object' }, password)
-//     console.log(encryptedString)
-//     console.log(encryptedObject)
+  //     // Encrypt
+  //     const encryptedString = encrypt('This is a string', password)
+  //     const encryptedObject = encrypt({ test: 'This is an object' }, password)
+  //     console.log(encryptedString)
+  //     console.log(encryptedObject)
 
-//     // Decrypt
-//     const decryptedString = decrypt(encryptedString, password)
-//     const decryptedObject = decrypt(encryptedObject, password)
-//     console.log(decryptedString)
-//     console.log(decryptedObject)
-//   }
+  //     // Decrypt
+  //     const decryptedString = decrypt(encryptedString, password)
+  //     const decryptedObject = decrypt(encryptedObject, password)
+  //     console.log(decryptedString)
+  //     console.log(decryptedObject)
+  //   }
 
   //testCryptoJS();
 
@@ -123,7 +121,7 @@ export default function Home() {
           <img className="contrast-125 scale-75 rounded-2xl " src="/mts_logo.jpg" alt="mts_logo"/>
         </div>
         
-        <h3 className="text-lg py-4">📃 Creden Form Instance</h3>
+        <h3 className="text-lg py-4">❄️ Creden Form Instance</h3>
         <label className="py-2" htmlFor="name">Token to Cookie</label>
         <input className="rounded-md border p-1 text-blue-600"
           type="text"

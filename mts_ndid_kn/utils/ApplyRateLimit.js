@@ -16,7 +16,7 @@ const getIP = request =>
 
 export const getRateLimitMiddlewares = ({
   limit = 10, // limit each IP to 10 requests per windowMs
-  windowMs = 10 * 1000, // 10 seconds
+  windowMs = 3 * 1000, // 3 seconds
   delayAfter = Math.round(10 / 2),
   delayMs = 500,
 } = {}) => [

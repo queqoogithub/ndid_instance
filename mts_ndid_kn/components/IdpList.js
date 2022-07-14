@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/router'
-import CountTimer from "./CountTimer";
+import Cookies from 'js-cookie';
+
+// export function IdpMapping({ idpIconSelected, setDesiredIdp, verify }) {
+//     return (
+//         <>
+//            {Object.values(idpIconSelected).map((value, index) =>
+//                 <div key={value.name} >
+//                     <img className="mx-1 my-1 h-20 w-20 hover:contrast-150"
+//                         src={value.image}
+//                         alt={value.name}
+//                         onClick={async () => { setDesiredIdp(value.name); await verify(); }}
+//                     />
+//                 </div>
+//             )}  
+//         </>
+//     )
+// }
 
 export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
     const router = useRouter()
@@ -17,7 +33,8 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
                                 <img className="mx-1 my-1 h-20 w-20 hover:contrast-150"
                                     src={value.image}
                                     alt={value.name}
-                                    onClick={async () => { setDesiredIdp(value.name); await verify(); }}
+                                    onClick={async () => await verify(value.name)}
+                                    //onClick={async () => { setDesiredIdp(value.name); await verify(); }}
                                 />
                             </div>
                         )} 
@@ -29,7 +46,7 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
                                 <img className="mx-1 my-1 h-20 w-20 hover:contrast-150"
                                     src={value.image}
                                     alt={value.name}
-                                    onClick={async () => { setDesiredIdp(value.name); await verify(); }}
+                                    onClick={async () => await verify(value.name)}
                                 />
                             </div>
                         )}
@@ -38,7 +55,7 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
             </>
             <div className='mt-8'>
                 <button className="my-8 mx-1 bg-[#ef4444] hover:bg-blue-500 text-white hover:text-white py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                {/* <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button> */}
+                {/* <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify()}>ยืนยัน / ถัดไป</button> */}
             </div>
         </>
     )
