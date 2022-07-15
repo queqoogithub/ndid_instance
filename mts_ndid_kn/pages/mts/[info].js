@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
 import idps from '../../utils/idps';
+import idps_knum from '../../utils/idps_knum';
 import { Switch } from '@headlessui/react'
 
 const User = ({ user_card_id, user_idp_list, user_name }) => {
@@ -240,8 +241,37 @@ export async function getServerSideProps(context) {
 
     // TODO ... check user blacklist -> GET AMLO (Knum service)
 
-    // TODO ... GET idp list -> POST verify (Knum service)
+    // @(Knum service) ... (1) POST:idps -> idp_list (2) GET:authoritative_source ->  (node_id = as_id_list) (3) POST:verify data -> ref_id (4) check verify status -> status 
     const response = await fetch(`http://localhost:8081/users/${card_id}`)
+    const res = await fetch("http://localhost:8081/ndid/idps", {
+    //const res = await fetch(process.env.KNUM_DRUPAL, { // uat-knum
+      method: 'post',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` // ${headers.cookie.slice(12)}
+        //'Authorization': `Bearer ${process.env.KNUM_TOKEN}` // uat-knum
+      },
+      body: JSON.stringify({
+        "min_aal": 2.2,
+        "min_ial": 2.3,
+        "namespace": "citizen_id",
+        "identifier": card_id,
+        "on_the_fly_support": true
+      })
+    })
+
+    console.log('res do not ok: ', !res.ok)
+    const idps = await res.json();
+    console.log('IDPS: ', idps);
+
+    let idp_list = []
+    idps.map((idp) => (idp_list.push(idp.id)))
+
+    console.log('idp_list = ', idp_list)
+
+    
+
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`)
     }

@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Body, Depends
+from fastapi import FastAPI, Body, Depends, status, Response
+from rsa import verify
+from sqlalchemy import null
 
-from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema
+from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema, IdpSchema, VerifyDataSchema
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import signJWT
 
@@ -166,8 +168,6 @@ async def update_status(id: int, status: str) -> dict:
             pending_verify_users[pending_verify_users.index(user)]['status'] = status #'ok'
             return { "id": id, "status": status, }
     return { "error": "User Ref ID did not ever send verify yet" }
-            
-
 # todo ... verify simulation ----------------------------------------------- end #
 
 @app.post("/user/signup", tags=["user"])
@@ -188,3 +188,257 @@ async def user_login(user: UserLoginSchema = Body(...)):
     return {
         "error": "Wrong login details!"
     }
+
+# todo ... UAT simulation ----------------------------------------------- start #
+idps = [{"identifier": 4859473506827,                         # id card
+         "content": [
+            {
+                "id": "D1F1532B-19AF-4A88-86AC-79693EC158C1", # idp uuid
+                "display_name": "Mock 1",                     # idp name
+                "display_name_th": "ทดสอบ 1",
+                "node_name": {
+                "industry_code": "991",
+                "company_code": "991",
+                "marketing_name_th": "ทดสอบ 1",
+                "marketing_name_en": "Mock 1",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "IDP",
+                "running": "1"
+                },
+                "agent": "false",
+                "on_the_fly_support": True,
+                "start_service_time": None,
+                "end_service_time": None
+            },
+            {
+                "id": "0F5A378A-FF19-4C00-A549-EA208A1C120A",
+                "display_name": "Siam Commercial Bank (SCB)",
+                "display_name_th": "ธนาคารไทยพาณิชย์",
+                "node_name": {
+                "industry_code": "001",
+                "company_code": "014",
+                "marketing_name_th": "ธนาคารไทยพาณิชย์",
+                "marketing_name_en": "Siam Commercial Bank (SCB)",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "IDP",
+                "running": "1"
+                },
+                "agent": "false",
+                "on_the_fly_support": True,
+                "start_service_time": None,
+                "end_service_time": None
+            }
+         ]
+        },
+        {"identifier": 3334445556667,                         # id card
+         "content": [
+            {
+                "id": "D3443131-514B-427F-98B7-B772691D8DD9", # idp uuid
+                "display_name": "Kiatnakin Phatra Bank",      # idp name
+                "display_name_th": "ธนาคารเกียรตินาคิน",
+                "node_name": {
+                "industry_code": "991",
+                "company_code": "991",
+                "marketing_name_th": "ธนาคารเกียรตินาคิน",
+                "marketing_name_en": "KPB",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "IDP",
+                "running": "1"
+                },
+                "agent": "false",
+                "on_the_fly_support": True,
+                "start_service_time": null,
+                "end_service_time": null
+            },
+            {
+                "id": "41D9EF13-115D-47A2-81AA-E1DE1FFD654D",
+                "display_name": "Bangkok Bank",
+                "display_name_th": "ธนาคารกรุงเทพ",
+                "node_name": {
+                "industry_code": "001",
+                "company_code": "014",
+                "marketing_name_th": "ธนาคารกรุงเทพ",
+                "marketing_name_en": "BBL",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "IDP",
+                "running": "1"
+                },
+                "agent": "false",
+                "on_the_fly_support": True,
+                "start_service_time": null,
+                "end_service_time": null
+            }
+         ]
+        },
+      ]
+
+verify_respones = [{"identifier": 3334445556667, 
+                    "content": 
+                        {
+                        "reference_id": "11111111-a1c0-45fa-b24f-f629bb8cb0ec",
+                        "ndid_request_id": "aaaaba53fedc83f490c44bf602eec7b2a1a2034a96d710dc203d22354219a567",
+                        "request_timeout": 3600
+                        }
+                   },
+                   {"identifier": 4859473506827, 
+                    "content": 
+                        {
+                        "reference_id": "22222222-0409-11ed-b939-0242ac120002",
+                        "ndid_request_id": "bbbbba53fedc83f490c44bf602eec7b2a1a2034a96d710dc203d22354219a567",
+                        "request_timeout": 3600
+                        }
+                   },
+                 ]   
+
+authoritative_source = [
+                {
+                "node_id": "08EC6CD0-0B53-49BA-936C-CC0FF113F1E6",
+                "node_name": {
+                "industry_code": "992",
+                "company_code": "992",
+                "marketing_name_th": "ทดสอบ 2",
+                "marketing_name_en": "Mock 2",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "AS",
+                "running": "1"
+                },
+                "min_ial": 2.3,
+                "min_aal": 2.2,
+                "supported_namespace_list": [
+                "citizen_id"
+                ]
+            },
+            {
+                "node_id": "614BC141-6D14-417A-88FD-B314ED149BA5",
+                "node_name": {
+                "industry_code": "991",
+                "company_code": "991",
+                "marketing_name_th": "ทดสอบ 1",
+                "marketing_name_en": "Mock 1",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "AS",
+                "running": "1"
+                },
+                "min_ial": 2.3,
+                "min_aal": 2.2,
+                "supported_namespace_list": [
+                "citizen_id"
+                ]
+            },
+            {
+                "node_id": "4A57316A-C68D-4902-8999-A1E65BA49DD6",
+                "node_name": {
+                "industry_code": "001",
+                "company_code": "069",
+                "marketing_name_th": "ธนาคารเกียรตินาคินภัทร",
+                "marketing_name_en": "Kiatnakin Phatra Bank",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "AS",
+                "running": "1"
+                },
+                "min_ial": 2.3,
+                "min_aal": 2.2,
+                "supported_namespace_list": [
+                "citizen_id"
+                ]
+            },
+            {
+                "node_id": "BF3755E6-E246-42BD-9ADB-11F9A8E35CAB",
+                "node_name": {
+                "industry_code": "001",
+                "company_code": "014",
+                "marketing_name_th": "ธนาคารไทยพาณิชย์",
+                "marketing_name_en": "Siam Commercial Bank (SCB)",
+                "proxy_or_subsidiary_name_th": "",
+                "proxy_or_subsidiary_name_en": "",
+                "role": "AS",
+                "running": "1"
+                },
+                "min_ial": 2.3,
+                "min_aal": 2.2,
+                "supported_namespace_list": [
+                "citizen_id"
+                ]
+            },
+        ] 
+
+check_status_respone = [
+            {
+                "reference_id": "22222222-0409-11ed-b939-0242ac120002",
+                "ndid_request_id": "bbbbba53fedc83f490c44bf602eec7b2a1a2034a96d710dc203d22354219a567",
+                "status": "VERIFIED",  # verify status
+                "response_list": [
+                    {
+                    "aal": 2.2,
+                    "ial": 2.3,
+                    "idp_id": "D1F1532B-19AF-4A88-86AC-79693EC158C1",
+                    "status": "accept"
+                    }
+                ]
+            },
+            {
+                "reference_id": "11111111-a1c0-45fa-b24f-f629bb8cb0ec",
+                "ndid_request_id": "aaaaba53fedc83f490c44bf602eec7b2a1a2034a96d710dc203d22354219a567",
+                "status": "ACCEPTED",  # verify status
+                "response_list": [
+                    {
+                    "aal": 2.2,
+                    "ial": 2.3,
+                    "idp_id": "D1F1532B-19AF-4A88-86AC-79693EC158C1",
+                    "status": "accept"
+                    }
+                ]
+            },
+        ]  
+
+@app.post("/ndid/idps", dependencies=[Depends(JWTBearer())], tags=["idps"])
+async def user_idp_regis(response: Response, post: IdpSchema = Body(...)) -> dict:
+    print('idp from body = ', post.identifier)
+    print('idp from idps = ', idps[0]["identifier"])
+    for idp in idps:
+        if idp["identifier"] == post.identifier:
+            response.status_code = status.HTTP_202_ACCEPTED
+            return idp['content']
+    response.status_code = status.HTTP_400_BAD_REQUEST
+    return {"error": "identifier do not exist"}
+
+# todo --> post: ndid/as/001.cust_info_001 --> เพื่อนำ node_id ไปใช้ verify
+@app.get("/ndid/as/{service_id}", dependencies=[Depends(JWTBearer())], tags=["authoritative_source"])
+async def service_provider(response: Response, service_id: str) -> dict:
+    print('serice id = ', service_id)
+    if service_id == '001.cust_info_001':
+        return authoritative_source
+    response.status_code = status.HTTP_400_BAD_REQUEST
+    return {"error": "somethong wrong"}
+
+@app.post("/ndid/verify/data", dependencies=[Depends(JWTBearer())], tags=["verify_data"])
+async def user_verify_ndid(response: Response, post: VerifyDataSchema = Body(...)) -> dict:
+    for verify in verify_respones:
+        if verify["identifier"] == post.identifier:
+            response.status_code = status.HTTP_202_ACCEPTED
+            return verify["content"] 
+    response.status_code = status.HTTP_400_BAD_REQUEST
+    return {"error": "somethong wrong"}
+
+@app.get("/ndid/verify/status/{reference_id}", dependencies=[Depends(JWTBearer())], tags=["check_verify_status"])
+async def check_verify(reference_id: str) -> dict:
+    for status in check_status_respone:
+        if status["reference_id"] == reference_id:
+            return status
+    return {"error": "somethong wrong"}
+
+@app.put("/ndid/active/status/{reference_id}/{active_status}", tags=["active_verify_status"])
+async def active_status(reference_id: str, active_status: str) -> dict:
+    for status in check_status_respone:
+        if status["reference_id"] == reference_id:
+            check_status_respone[check_status_respone.index(status)]['status'] = active_status 
+        return check_status_respone[check_status_respone.index(status)]
+    return {"active status error": "somethong wrong"}
+# todo ... UAT simulation ----------------------------------------------- end #
