@@ -54,5 +54,5 @@ export default function CountTimer({ startTs }) {
 
     // /console.log('timerComponents = ', timerComponents)
 
-    return (<> {timerComponents.length ? timerComponents : <span> 🚫 Time's up! 🚫 </span>} </>)
+    return (<> {timerComponents.length ? timerComponents : <span> 🚫 หมดเวลา กรุณาติดต่อเจ้าหน้าที่ธนาคารที่ท่านเลือกยืนยันตัวตน เพื่อดำเนินการให้แล้วเสร็จ 🚫 </span>} </>)
 }

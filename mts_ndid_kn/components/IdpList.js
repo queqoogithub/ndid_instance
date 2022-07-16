@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from 'next/router'
-import Cookies from 'js-cookie';
 
 // export function IdpMapping({ idpIconSelected, setDesiredIdp, verify }) {
 //     return (
@@ -18,7 +17,7 @@ import Cookies from 'js-cookie';
 //     )
 // }
 
-export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
+export default function IdpList({ idpIconSelected, verify }) {
     const router = useRouter()
     
     return (
@@ -34,7 +33,6 @@ export default function IdpList({ idpIconSelected, setDesiredIdp, verify }) {
                                     src={value.image}
                                     alt={value.name}
                                     onClick={async () => await verify(value.name)}
-                                    //onClick={async () => { setDesiredIdp(value.name); await verify(); }}
                                 />
                             </div>
                         )} 

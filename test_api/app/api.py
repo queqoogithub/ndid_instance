@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Body, Depends, status, Response
-from rsa import verify
-from sqlalchemy import null
+from fastapi.middleware.cors import CORSMiddleware # T-T 
+
+#from rsa import verify
+#from sqlalchemy import null
 
 from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema, IdpSchema, VerifyDataSchema
 from app.auth.auth_bearer import JWTBearer
@@ -79,6 +81,19 @@ app = FastAPI(
     version="0.0.1"
 )
 
+# Set CORS
+origins = [
+    "http://localhost:3000",
+    "localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @app.get("/", tags=["root"])
 async def read_root() -> dict:
@@ -250,8 +265,8 @@ idps = [{"identifier": 4859473506827,                         # id card
                 },
                 "agent": "false",
                 "on_the_fly_support": True,
-                "start_service_time": null,
-                "end_service_time": null
+                "start_service_time": None,
+                "end_service_time": None
             },
             {
                 "id": "41D9EF13-115D-47A2-81AA-E1DE1FFD654D",
@@ -269,8 +284,8 @@ idps = [{"identifier": 4859473506827,                         # id card
                 },
                 "agent": "false",
                 "on_the_fly_support": True,
-                "start_service_time": null,
-                "end_service_time": null
+                "start_service_time": None,
+                "end_service_time": None
             }
          ]
         },
@@ -422,7 +437,16 @@ async def service_provider(response: Response, service_id: str) -> dict:
 async def user_verify_ndid(response: Response, post: VerifyDataSchema = Body(...)) -> dict:
     for verify in verify_respones:
         if verify["identifier"] == post.identifier:
-            response.status_code = status.HTTP_202_ACCEPTED
+            
+            for status in check_status_respone:
+                if status["reference_id"] == verify["content"]["reference_id"]:
+                    check_status_respone[check_status_respone.index(status)]['response_list'] = [{
+                        "aal": 2.2,
+                        "ial": 2.3,
+                        "idp_id": post.idp_id_list[0],
+                        "status": "accept"
+                    }]
+            #response.status_code = status.HTTP_202_ACCEPTED
             return verify["content"] 
     response.status_code = status.HTTP_400_BAD_REQUEST
     return {"error": "somethong wrong"}
@@ -431,7 +455,9 @@ async def user_verify_ndid(response: Response, post: VerifyDataSchema = Body(...
 async def check_verify(reference_id: str) -> dict:
     for status in check_status_respone:
         if status["reference_id"] == reference_id:
+            #response.status_code = status.HTTP_202_ACCEPTED
             return status
+    #response.status_code = status.HTTP_400_BAD_REQUEST
     return {"error": "somethong wrong"}
 
 @app.put("/ndid/active/status/{reference_id}/{active_status}", tags=["active_verify_status"])
@@ -439,6 +465,6 @@ async def active_status(reference_id: str, active_status: str) -> dict:
     for status in check_status_respone:
         if status["reference_id"] == reference_id:
             check_status_respone[check_status_respone.index(status)]['status'] = active_status 
-        return check_status_respone[check_status_respone.index(status)]
+            return check_status_respone[check_status_respone.index(status)]
     return {"active status error": "somethong wrong"}
 # todo ... UAT simulation ----------------------------------------------- end #

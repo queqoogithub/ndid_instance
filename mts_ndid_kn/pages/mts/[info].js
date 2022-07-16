@@ -1,6 +1,6 @@
 import CountTimer from '../../components/CountTimer'; 
 import IdpList from '../../components/IdpList'; 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
@@ -8,7 +8,7 @@ import idps from '../../utils/idps';
 import idps_knum from '../../utils/idps_knum';
 import { Switch } from '@headlessui/react'
 
-const User = ({ user_card_id, user_idp_list, user_name }) => {
+const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) => {
     const router = useRouter()
     const [toVerify, setToVerify] = useState('')
     const [testToken, setTestToken] = useState('')
@@ -23,11 +23,14 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
 
     useEffect(() => {
       if (user_card_id == 0) { 
-        router.push(`/creden?status=${204}`); 
+        router.push(`/creden?status=${204+" : id do not exist!"}`); 
+      }
+      if (user_idp_list == []) {
+        router.push(`/creden?status=${204+" : empty idps!"}`); 
       }
     }, [])
 
-    useEffect(() => {
+    useMemo(() => {
       console.log('in useEffect !!!!!!!!!!!!!!')
       if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
       if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
@@ -37,19 +40,46 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         var pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
         var pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
         setStartTs(pendingUserCardId['ts'])
+        console.log('set start TS')
       } catch (e) { console.log('error @fetchStatusData: ', e) }
 
       const fetchStatusData = async () => {
-        await checkVerificationStatus(toVerify['ref_id']) 
+        //await checkVerificationStatus(toVerify['ref_id']) 
+        await checkVerifyDataStatus(toVerify['reference_id'])
       }
 
+      if(Cookies.get('pendingUser')){
       const interval = setInterval(async() => {
           if (!Cookies.get('pendingUser')) {
             clearInterval(interval);
           }
           await fetchStatusData()
       }, 15000) 
+      }
     }, [toVerify])
+
+    const verifyData = async(selected_idp_name) => {
+      const selected_idp_uuid = idps_knum.icons.find((c) => selected_idp_name == c.name).uuid
+      const selected_idp_marketing_name = idps_knum.icons.find((c) => selected_idp_name == c.name).marketing_name
+
+      const res = await fetch("/api/knum/verify/verify_data", {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          identifier: user_card_id,
+          selected_idp_uuid: selected_idp_uuid,
+          selected_idp_marketing_name: selected_idp_marketing_name,
+      })
+      })
+
+      const pendingUser = await res.json()
+      Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
+      console.log('verifyData res = ', pendingUser)
+      setToVerify(pendingUser)
+    }
 
     const verify = async (idp_name) => { // user selected one idp
         const response = await fetch("/api/nc_id", {
@@ -61,7 +91,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
           },
           body: JSON.stringify({
             card_id: user_card_id,
-            name: user_name,
+            //name: user_name,
             //content: desiredIpd,
             content: idp_name,
         })
@@ -75,6 +105,28 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
         Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
         setToVerify(pendingUser)
         //return setToVerify(pendingUser)
+    }
+
+    const checkVerifyDataStatus = async(reference_id) => {
+      if (Cookies.get('pendingUser')) {
+        try {
+          const res = await fetch(`/api/knum/verify/status/${reference_id}`);
+          console.log('check verified status of ', res.ok)
+          if (res.ok) {
+            const status = await res.json()
+            console.log('in checking the status: ',  status.status)
+            if (status.status == 'VERIFIED') {
+              Cookies.remove('pendingUser')
+              router.push(`/creden?status=${status.status}`);
+            }
+            // Todo ... another res status
+          }
+          console.log('check verified !!!!')
+        } catch (e) { 
+          console.log('error as a check status: ', e) 
+        }
+        
+      }
     }
 
     const checkVerificationStatus = async (id) => {
@@ -117,7 +169,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
     }
 
     const idpIconSelected = user_idp_list
-      .map(idp => idps.icons
+      .map(idp => idps_knum.icons
         .find(icon => icon.name == idp))
           .filter(icon => icon != null)
     
@@ -147,8 +199,7 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 {/* toggle for test */}
                 {testToggle ? 
                   <div className='grid justify-items-center mb-8'>
-                  <p className='mb-8'>😃 User ID <b> {user_card_id} </b> | {user_name} </p>
-                  <span>{JSON.stringify(user_idp_list, null, 4)}</span><br/>
+                  <p className='mb-8'>😃 ID <b> {user_card_id} </b> / {user_firstname} {user_lastname} / {JSON.stringify(user_idp_list, null, 4)} </p>
                   <label className="py-2" htmlFor="name">Check Verification Status (Ref ID)</label>
                   <input className="rounded-md border p-1 text-blue-600"
                       type="number"
@@ -200,11 +251,11 @@ const User = ({ user_card_id, user_idp_list, user_name }) => {
                 
                 {/* NOTE: hello test idp list component! */}
                 { !Cookies.get('pendingUser') ? 
-                    <IdpList idpIconSelected={idpIconSelected} setDesiredIdp={setDesiredIdp} verify={verify} /> 
+                    <IdpList idpIconSelected={idpIconSelected} verify={verifyData} /> 
                     : 
                     <div className='grid justify-items-center'>
                     <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
-                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['ref_id']} ]</p> 
+                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['reference_id']} ]</p> 
                     </div>
                     <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
                       กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
@@ -232,24 +283,23 @@ export async function getServerSideProps(context) {
     const password = 'secure secret key' // TODO ... env
     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
     const decryptedObject = decrypt(info, password)
-    //console.log('from server decrypt = ', decryptedObject)
-    //console.log('card_id from server decrypt = ', decryptedObject.info['card_id'])
     const card_id = decryptedObject.info['card_id']
-    var user_idp_list = []
-    var user_card_id = 0
-    var user_name = ""
+    // var user_idp_list = []
+    // var user_card_id = 0
+    // var user_firstname = ""
+    // var user_lastname = ""
 
     // TODO ... check user blacklist -> GET AMLO (Knum service)
 
     // @(Knum service) ... (1) POST:idps -> idp_list (2) GET:authoritative_source ->  (node_id = as_id_list) (3) POST:verify data -> ref_id (4) check verify status -> status 
-    const response = await fetch(`http://localhost:8081/users/${card_id}`)
-    const res = await fetch("http://localhost:8081/ndid/idps", {
+    
+    const idps_res = await fetch("http://localhost:8081/ndid/idps", {
     //const res = await fetch(process.env.KNUM_DRUPAL, { // uat-knum
       method: 'post',
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` // ${headers.cookie.slice(12)}
+        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` // process.env.TEST_API_TOKEN
         //'Authorization': `Bearer ${process.env.KNUM_TOKEN}` // uat-knum
       },
       body: JSON.stringify({
@@ -261,40 +311,80 @@ export async function getServerSideProps(context) {
       })
     })
 
-    console.log('res do not ok: ', !res.ok)
-    const idps = await res.json();
+    console.log('res do not ok: ', !idps_res.ok)
+    const idps = await idps_res.json();
     console.log('IDPS: ', idps);
 
-    let idp_list = []
-    idps.map((idp) => (idp_list.push(idp.id)))
-
-    console.log('idp_list = ', idp_list)
-
-    
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`)
+    if(idps.error) {
+      console.log('IDPS error: ', idps.error)
     }
-      
-    try {
-      const userNdidData = await response.json()
-      // TODO ... (1) sanitizing input from html form check id_card, name according to Knum
-      //          (2) encrypt ข้อมูล user ที่ user_idp_list เพื่อเช็ค user ที่ user_idp_list == [] แล้วไป decrypt ที่ api/nc_id -> post: verify เพื่อปิดสิทธิ์ req ของ user นี้ 
-      //          (3) ป้องกันการ verify ซ้ำ จาก user_idp_list != []
-      if (userNdidData == null) {
-        console.log('Do not have user in NDID database')
-      } else {
-        console.log('User NDID Data = ', userNdidData)
-        user_name = userNdidData.data['name']
-        user_card_id = userNdidData.data['card_id']
-        user_idp_list = userNdidData.data['content']
+
+    if(!idps_res.ok) {
+      return {
+          redirect: {
+          destination: '/creden?status=204',
+          permanent: false,
+        },
       }
-    } catch (e) {
-      console.log('Check Status Error: ', e)
     }
+
+    if(idps == []) {
+      return {
+          redirect: {
+          destination: '/creden?status=205',
+          permanent: false,
+        },
+      }
+    }
+
+    const idp_user_regis = idps.map((idp) => (idps_knum.icons.find((c) => c.uuid == idp.id))).map((d) => d.name)
+    console.log('idp_user_regis = ', idp_user_regis)
+
+    const as_res = await fetch(`http://localhost:8081/ndid/as/001.cust_info_001`, {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` 
+        //'Authorization': `Bearer ${process.env.KNUM_TOKEN}` // uat-knum
+      }
+    });
+
+    const as = await as_res.json();
+    console.log('as = ', as)
+    const sample_select_idp = 'Mock 1'
+    const as_match_idp = as.find((a) => a.node_name.marketing_name_en == sample_select_idp).node_id
+    console.log('as_match_idp (node_id) = ', as_match_idp)
+    console.log('chk uuid from name', idps_knum.icons.find((c) => c.name == 'mock_1').uuid)
+
+    const user_card_id = card_id
+    const user_firstname = decryptedObject.info['firstname']
+    const user_lastname = decryptedObject.info['lastname']
+    const user_idp_list = idp_user_regis
+
+    // if (!response.ok) {
+    //   throw new Error(`Error: ${response.status}`)
+    // }
+      
+    // try {
+    //   const userNdidData = await response.json()
+    //   // TODO ... (1) sanitizing input from html form check id_card, name according to Knum
+    //   //          (2) encrypt ข้อมูล user ที่ user_idp_list เพื่อเช็ค user ที่ user_idp_list == [] แล้วไป decrypt ที่ api/nc_id -> post: verify เพื่อปิดสิทธิ์ req ของ user นี้ 
+    //   //          (3) ป้องกันการ verify ซ้ำ จาก user_idp_list != []
+    //   if (userNdidData == null) {
+    //     console.log('Do not have user in NDID database')
+    //   } else {
+    //     console.log('User NDID Data = ', userNdidData)
+    //     user_name = userNdidData.data['name']
+    //     user_card_id = userNdidData.data['card_id']
+    //     user_idp_list = userNdidData.data['content']
+    //   }
+    // } catch (e) {
+    //   console.log('Check Status Error: ', e)
+    // }
 
     return {
-        props: { user_card_id: user_card_id, user_idp_list: user_idp_list, user_name: user_name, }
+        props: { user_card_id: user_card_id, user_idp_list: user_idp_list, user_firstname: user_firstname, user_lastname: user_lastname, }
     }
 }
 

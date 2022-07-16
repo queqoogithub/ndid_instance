@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useReducer, useState } from "react";
 import Cookies from 'js-cookie';
 import CryptoJS from 'crypto-js'
@@ -11,10 +10,15 @@ function reducer(state, action) {
         ...state,
         card_id: action.payload.card_id
       };
-    case "UPDATE_NAME":
+    case "UPDATE_FIRSTNAME":
       return {
         ...state,
-        name: action.payload.name
+        firstname: action.payload.firstname
+      };
+    case "UPDATE_LASTNAME":
+      return {
+        ...state,
+        lastname: action.payload.lastname
       };
     case "UPDATE_APPTYPE":
       return {
@@ -30,17 +34,15 @@ function reducer(state, action) {
 
 const initialState = {
   card_id: 4859473506827,
-  firstname: "test1",
-  apptype: "abc",
+  firstname: "foo",
+  lastname: "boo",
+  apptype: "aaa",
 };
 
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [data, setData] = useState([]);
   const [toVerify, setToVerify] = useState('');
   const [testToken, setTestToken] = useState('');
-  const [cardID, setCardID] = useState(0);
-  const [updateStatus, setUpdateStatus] = useState('');
  
   //console.log('Creden Test Token -> Cookie => ', Cookies.get('credenToken'))
   const router = useRouter();
@@ -98,13 +100,15 @@ export default function Home() {
     const password = 'secure secret key'; // TODO ... env
     const encrypt = (content, password) => CryptoJS.AES.encrypt(JSON.stringify({ content }), password).toString()
     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
+    
     // Encrypt
     const encryptedObject = encrypt({ info: state }, password)
     console.log('encrypt = ', encryptedObject)
+    
     // Decrypt
     const decryptedObject = decrypt(encryptedObject, password)
     console.log('decrypt = ', decryptedObject)
-
+    
     // Encode / Decode URI เรา Encode เพื่อกำจัด "/" 
     const urlEncode = encodeURIComponent(encryptedObject.toString())
     console.log('encrypt uri = ', urlEncode)
@@ -145,15 +149,27 @@ export default function Home() {
             })
           }
         />
-        <label className="py-2" htmlFor="name">Name</label>
+        <label className="py-2" htmlFor="name">Firstname</label>
         <input className="rounded-md border p-1 text-slate-900"
           type="text"
-          id="name"
+          id="firstname"
           value={state.firstname}
           onChange={(e) =>
             dispatch({
-              type: "UPDATE_NAME",
-              payload: { name: e.target.value }
+              type: "UPDATE_FIRSTNAME",
+              payload: { firstname: e.target.value }
+            })
+          }
+        />
+        <label className="py-2" htmlFor="name">Lastname</label>
+        <input className="rounded-md border p-1 text-slate-900"
+          type="text"
+          id="lastname"
+          value={state.lastname}
+          onChange={(e) =>
+            dispatch({
+              type: "UPDATE_LASTNAME",
+              payload: { lastname: e.target.value }
             })
           }
         />
@@ -174,9 +190,10 @@ export default function Home() {
         <button className="my-8 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-full" onClick={passUserInfo}>ยืนยันตัวตน NDID</button>
       
       <p className="text-3xl font-bold underline py-4"></p>
-      { query.status=='verified' ? <><div>Verification Status</div><pre><b>🟢 { query.status }</b></pre></> : null }
-      { query.status=='reject' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
-      { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: no content</pre></> : null }
+      { query.status=='VERIFIED' ? <><div>Verification Status</div><pre><b>🟢 { query.status }</b></pre></> : null }
+      { query.status=='REJECT' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
+      { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: user id do not exist</pre></> : null }
+      { query.status=='205' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: idp do not exist</pre></> : null }
 
       <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2] ">
       ©️ Powered by{' '}BDEV
