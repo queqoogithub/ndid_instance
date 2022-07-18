@@ -7,6 +7,8 @@ import CryptoJS from 'crypto-js'
 import idps from '../../utils/idps';
 import idps_knum from '../../utils/idps_knum';
 import { Switch } from '@headlessui/react'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) => {
     const router = useRouter()
@@ -58,6 +60,8 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
       }
     }, [toVerify])
 
+    const notify = () => toast("ไม่พบผู้ให้บริการ กรุณาเลือกธนาคารอื่น");
+
     const verifyData = async(selected_idp_name) => {
       const selected_idp_uuid = idps_knum.icons.find((c) => selected_idp_name == c.name).uuid
       const selected_idp_marketing_name = idps_knum.icons.find((c) => selected_idp_name == c.name).marketing_name
@@ -74,6 +78,10 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
           selected_idp_marketing_name: selected_idp_marketing_name,
       })
       })
+
+      if (!res.ok) {
+        notify()
+      }
 
       const pendingUser = await res.json()
       Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
@@ -272,6 +280,8 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
             <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
             ©️ Powered by{' '}BDEV
             </footer>
+
+            <ToastContainer />
           
         </div>
     )
