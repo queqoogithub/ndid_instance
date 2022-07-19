@@ -1,5 +1,15 @@
 import nc from "next-connect";
 import applyRateLimit from '../../../../utils/ApplyRateLimit';
+import pairs from "../../../../utils/PairIdentityInfo";
+import CryptoJS from 'crypto-js'
+
+const hashing = async (toHash) => {
+    const password = process.env.SECRETE_KEY;
+    const encrypt = (content, password) => CryptoJS.AES.encrypt(JSON.stringify({ content }), password).toString()
+    //const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
+    const encryptedString = encrypt(toHash, password)
+    return encryptedString
+}
 
 const handler = nc({
     onError: (err, req, res, next) => {
@@ -8,7 +18,7 @@ const handler = nc({
     },
   })
   
-handler.use(applyRateLimit) // use middleware rate-limit
+handler.use(applyRateLimit, pairs) // use middleware rate-limit
 
 handler.post(async(req, res) => {
     const { body, headers } = req;
@@ -65,7 +75,11 @@ handler.post(async(req, res) => {
     const currentTs = await parseInt(Date.now() / 1000)
     console.log('start TS = ', currentTs)
     console.log('verified: ', verified)
-    return res.status(200).json({...verified, ts: currentTs})
+
+    const refIdHash = await hashing(verified.reference_id)
+    console.log('hash red_id = ', refIdHash)
+
+    return res.status(200).json({...verified, ts: currentTs, pairRefId: refIdHash})
 
 })
 

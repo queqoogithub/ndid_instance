@@ -10,7 +10,7 @@ import { Switch } from '@headlessui/react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) => {
+const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user_info }) => {
     const router = useRouter()
     const [toVerify, setToVerify] = useState('')
     const [testToken, setTestToken] = useState('')
@@ -21,7 +21,9 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
     const [startTS, setStartTs] = useState()
     const [testToggle, setTestToggle] = useState(false)
 
-    //console.log('idp was selected: ', desiredIpd)
+    Cookies.set('userInfo', user_info, { expires: 1 })
+    Cookies.set('userCardId', user_card_id, { expires: 1 })
+    console.log('userCardId = ', Cookies.get('userCardId'))
 
     useEffect(() => {
       if (user_card_id == 0) { 
@@ -69,14 +71,15 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
       const res = await fetch("/api/knum/verify/verify_data", {
         method: "POST",
         headers: {
-          'Accept': 'application/json, text/plain, */*',
+          "Accept": "application/json, text/plain, */*",
           "Content-Type": "application/json",
+          "Pair-Identity-Info": Cookies.get('userInfo') //user_info
         },
         body: JSON.stringify({
-          identifier: user_card_id,
+          identifier: Cookies.get('userCardId'), //user_card_id,
           selected_idp_uuid: selected_idp_uuid,
           selected_idp_marketing_name: selected_idp_marketing_name,
-      })
+        })
       })
 
       if (!res.ok) {
@@ -87,6 +90,7 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
       Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
       console.log('verifyData res = ', pendingUser)
       setToVerify(pendingUser)
+
     }
 
     const verify = async (idp_name) => { // user selected one idp
@@ -118,13 +122,21 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
     const checkVerifyDataStatus = async(reference_id) => {
       if (Cookies.get('pendingUser')) {
         try {
-          const res = await fetch(`/api/knum/verify/status/${reference_id}`);
+          const res = await fetch(`/api/knum/verify/status/${reference_id}`, {
+            headers: {
+              "Accept": "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              "Pair-Identity-Ref": toVerify['pairRefId'] // Todo ... เปลี่ยนไปใช้ state อื่นๆ เพื่อไม่ให้ side effect ที่ useMemo
+            },
+          });
           console.log('check verified status of ', res.ok)
           if (res.ok) {
             const status = await res.json()
             console.log('in checking the status: ',  status.status)
             if (status.status == 'VERIFIED') {
               Cookies.remove('pendingUser')
+              Cookies.remove('userInfo') // user_info
+              Cookies.remove('userCardId') // user_card-id
               router.push(`/creden?status=${status.status}`);
             }
             // Todo ... another res status
@@ -268,7 +280,7 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
                     <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
                       กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
                     </div>
-                    <p className='my-14'><CountTimer startTs={ startTS } /></p>
+                    {typeof window == 'undefined' ? <></> : <div className='my-14'><CountTimer startTs={ startTS } /></div> }
                     <button className="my-8 mx-1 bg-[#ef4444] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
                   </div>
                 }
@@ -289,15 +301,11 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname }) =>
 
 export async function getServerSideProps(context) {
     const { info } = await context.params
-    //console.log('encrypt info from server = ', info)
-    const password = 'secure secret key' // TODO ... env
+    console.log('encrypt info from server = ', info)
+    const password = process.env.SECRETE_KEY // TODO ... env
     const decrypt = (crypted, password) => JSON.parse(CryptoJS.AES.decrypt(crypted, password).toString(CryptoJS.enc.Utf8)).content
     const decryptedObject = decrypt(info, password)
     const card_id = decryptedObject.info['card_id']
-    // var user_idp_list = []
-    // var user_card_id = 0
-    // var user_firstname = ""
-    // var user_lastname = ""
 
     // TODO ... check user blacklist -> GET AMLO (Knum service)
 
@@ -372,6 +380,8 @@ export async function getServerSideProps(context) {
     const user_lastname = decryptedObject.info['lastname']
     const user_idp_list = idp_user_regis
 
+    const user_info = info
+
     // if (!response.ok) {
     //   throw new Error(`Error: ${response.status}`)
     // }
@@ -394,7 +404,7 @@ export async function getServerSideProps(context) {
     // }
 
     return {
-        props: { user_card_id: user_card_id, user_idp_list: user_idp_list, user_firstname: user_firstname, user_lastname: user_lastname, }
+        props: { user_card_id: user_card_id, user_idp_list: user_idp_list, user_firstname: user_firstname, user_lastname: user_lastname, user_info: info, }
     }
 }
 

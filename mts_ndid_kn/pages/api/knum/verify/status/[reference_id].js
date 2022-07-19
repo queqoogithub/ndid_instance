@@ -1,5 +1,6 @@
 import nc from "next-connect";
 import applyRateLimit from '../../../../../utils/ApplyRateLimit';
+import pairsRefId from "../../../../../utils/PairIdentityRef";
 
 const handler = nc({
     onError: (err, req, res, next) => {
@@ -8,7 +9,7 @@ const handler = nc({
     },
   })
   
-handler.use(applyRateLimit)
+handler.use(applyRateLimit, pairsRefId)
 
 handler.get(async (req, res) => {
     const { reference_id } = req.query;
