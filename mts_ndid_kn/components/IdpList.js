@@ -53,7 +53,6 @@ export default function IdpList({ idpIconSelected, verify }) {
             </>
             <div className='mt-8'>
                 <button className="my-8 mx-1 bg-[#ef4444] hover:bg-blue-500 text-white hover:text-white py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                {/* <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify()}>ยืนยัน / ถัดไป</button> */}
             </div>
         </>
     )

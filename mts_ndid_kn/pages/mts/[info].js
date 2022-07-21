@@ -1,6 +1,6 @@
 import CountTimer from '../../components/CountTimer'; 
 import IdpList from '../../components/IdpList'; 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
@@ -21,18 +21,22 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
     const [startTS, setStartTs] = useState()
     const [testToggle, setTestToggle] = useState(false)
 
+    const [pairRefId, setPairRefId] = useState('')
+    const [refId, setRefId] =useState('')
+
     Cookies.set('userInfo', user_info, { expires: 1 })
     Cookies.set('userCardId', user_card_id, { expires: 1 })
     console.log('userCardId = ', Cookies.get('userCardId'))
 
-    useEffect(() => {
-      if (user_card_id == 0) { 
-        router.push(`/creden?status=${204+" : id do not exist!"}`); 
-      }
-      if (user_idp_list == []) {
-        router.push(`/creden?status=${204+" : empty idps!"}`); 
-      }
-    }, [])
+    // useEffect(() => {
+    //   if (user_card_id == 0) { 
+    //     router.push(`/creden?status=${204+" : id do not exist!"}`); 
+    //   }
+    //   if (user_idp_list == []) {
+    //     router.push(`/creden?status=${204+" : empty idps!"}`); 
+    //   }
+    //   console.log('trig >>>>>>>>>>')
+    // }, [])
 
     useMemo(() => {
       console.log('in useEffect !!!!!!!!!!!!!!')
@@ -44,21 +48,24 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
         var pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
         var pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
         setStartTs(pendingUserCardId['ts'])
-        console.log('set start TS')
+        console.log('set start TS = ', pendingUserCardId['ts'])
+        setPairRefId(pendingUserCardId['pairRefId'])
+        console.log('set pairRefId = ', pendingUserCardId['pairRefId'])
+        setRefId(pendingUserCardId['reference_id'])
+        console.log('set RefId = ', pendingUserCardId['reference_id'])
+
       } catch (e) { console.log('error @fetchStatusData: ', e) }
 
-      const fetchStatusData = async () => {
-        //await checkVerificationStatus(toVerify['ref_id']) 
-        await checkVerifyDataStatus(toVerify['reference_id'])
-      }
-
       if(Cookies.get('pendingUser')){
-      const interval = setInterval(async() => {
-          if (!Cookies.get('pendingUser')) {
-            clearInterval(interval);
-          }
-          await fetchStatusData()
-      }, 15000) 
+        const interval = setInterval(() => {
+            console.log('in the interval >>>>> MEMO <<<<< ref id = ', toVerify['reference_id']) // refId
+            if (!Cookies.get('pendingUser')) {
+              clearInterval(interval);
+            }
+            // fetch status
+             checkVerifyDataStatus(toVerify['reference_id'])
+            
+        }, 15000) 
       }
     }, [toVerify])
 
@@ -73,10 +80,10 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
         headers: {
           "Accept": "application/json, text/plain, */*",
           "Content-Type": "application/json",
-          "Pair-Identity-Info": Cookies.get('userInfo') //user_info
+          "Pair-Identity-Info": user_info // Cookies.get('userInfo') 
         },
         body: JSON.stringify({
-          identifier: Cookies.get('userCardId'), //user_card_id,
+          identifier: user_card_id, // Cookies.get('userCardId'), 
           selected_idp_uuid: selected_idp_uuid,
           selected_idp_marketing_name: selected_idp_marketing_name,
         })
@@ -89,47 +96,23 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
       const pendingUser = await res.json()
       Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
       console.log('verifyData res = ', pendingUser)
-      setToVerify(pendingUser)
-
-    }
-
-    const verify = async (idp_name) => { // user selected one idp
-        const response = await fetch("/api/nc_id", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization-Test-Creden": Cookies.get('credenToken'), // ตอน dev ให้เอา token คุณหนุ่มไปไว้ฝั่ง server (api) อย่าเอาไว้ฝั่ง client !!!
-            "Pending-Verification-Time": pendingTime,
-          },
-          body: JSON.stringify({
-            card_id: user_card_id,
-            //name: user_name,
-            //content: desiredIpd,
-            content: idp_name,
-        })
-        })
-      
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`)
-        }
-        const pendingUser = await response.json()
-        console.log('pending User ===> ', pendingUser)
-        Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
-        setToVerify(pendingUser)
-        //return setToVerify(pendingUser)
+      return setToVerify(pendingUser)
     }
 
     const checkVerifyDataStatus = async(reference_id) => {
+      console.log('ref_id (query) >>>>', reference_id)
+      console.log('ref_id (state) >>>>', toVerify['reference_id'])
       if (Cookies.get('pendingUser')) {
         try {
           const res = await fetch(`/api/knum/verify/status/${reference_id}`, {
+            method: "GET",
             headers: {
               "Accept": "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              "Pair-Identity-Ref": toVerify['pairRefId'] // Todo ... เปลี่ยนไปใช้ state อื่นๆ เพื่อไม่ให้ side effect ที่ useMemo
+              "Pair-Identity-Ref": toVerify['pairRefId'] // ใช้ pairRefId แล้วทำไม 404 ?  
             },
           });
-          console.log('check verified status of ', res.ok)
+          console.log('check verified status ok? ', res.ok)
           if (res.ok) {
             const status = await res.json()
             console.log('in checking the status: ',  status.status)
@@ -146,45 +129,6 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
           console.log('error as a check status: ', e) 
         }
         
-      }
-    }
-
-    const checkVerificationStatus = async (id) => {
-      if (Cookies.get('pendingUser')) {
-        const response = await fetch(`/api/nc_id/${id}`);
-    
-        if (!response.ok) {
-          //throw new Error(`Error: ${response.status}`);
-          console.log('respone error @checkVerificationStatus: ', response.status)
-        }
-        try {
-          const people = await response.json()
-          setUpdateStatus(people)
-          console.log('immediated status = ', people['status'])
-          if (people['status'] == 'verified') { // ok = verified
-            console.log('VERIFIED !!! & DELETE COOKIE')
-            Cookies.remove('pendingUser')
-
-            setToVerify('')
-
-            //router.push(`/creden`);
-            router.push(`/creden?status=${people['status']}`);
-
-          }
-          if (people['status'] == 'reject') {
-            console.log('REJECT !!! & DELETE COOKIE')
-
-            // TODO ... msg for reject status
-            Cookies.remove('pendingUser')
-
-            setToVerify('')
-
-            router.push(`/creden?status=${people['status']}`);
-          }
-
-        } catch (e) {
-          console.log('Check Status Error: ', e)
-        }
       }
     }
 
@@ -275,26 +219,20 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
                     : 
                     <div className='grid justify-items-center'>
                     <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
-                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร {toVerify['selected_bank']} <p className='text-[12px]'>[ Transaction Ref: {toVerify['reference_id']} ]</p> 
+                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร <p className='text-[12px]'>[ Transaction Ref: {refId} ]</p> 
                     </div>
                     <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
                       กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่
                     </div>
-                    {typeof window == 'undefined' ? <></> : <div className='my-14'><CountTimer startTs={ startTS } /></div> }
+                    <div className='my-14'><CountTimer startTs={ startTS } /></div>
                     <button className="my-8 mx-1 bg-[#ef4444] hover:bg-blue-500 text-white hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
                   </div>
                 }
-
             </div>
-
-            {(toVerify && testToggle) ? <><p>To verify: </p><pre>{JSON.stringify(toVerify, null, 4)}</pre></> : null}
-
             <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2]">
             ©️ Powered by{' '}BDEV
             </footer>
-
             <ToastContainer />
-          
         </div>
     )
 }

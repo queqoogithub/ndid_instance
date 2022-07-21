@@ -9,10 +9,11 @@ const handler = nc({
     },
   })
   
-handler.use(applyRateLimit, pairsRefId)
+handler.use(applyRateLimit, pairsRefId) // pairsRefId
 
 handler.get(async (req, res) => {
     const { reference_id } = req.query;
+    console.log('query ref-id: ',reference_id )
     const status_res = await fetch(`http://localhost:8081/ndid/verify/status/${reference_id}`, {
         method: 'get',
         headers: {
@@ -22,7 +23,7 @@ handler.get(async (req, res) => {
         },
     });
     const status  = await status_res.json()
-    //console.log('status_res OK ? ', status_res.status)
+    console.log('status_res OK ? ', status_res.status)
     
     // TODO ... respone data to Creden ... by Encrypt(data) or Post(data) and then @Frontend direct to Creden page .
     //console.log('pending status = ', status) 

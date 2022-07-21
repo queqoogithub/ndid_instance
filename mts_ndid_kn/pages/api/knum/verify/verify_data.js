@@ -77,7 +77,7 @@ handler.post(async(req, res) => {
     console.log('verified: ', verified)
 
     const refIdHash = await hashing(verified.reference_id)
-    console.log('hash red_id = ', refIdHash)
+    console.log('hash ref_id = ', refIdHash)
 
     return res.status(200).json({...verified, ts: currentTs, pairRefId: refIdHash})
 
