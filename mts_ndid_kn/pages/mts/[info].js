@@ -24,50 +24,36 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
 
     const [pairRefId, setPairRefId] = useState('')
     const [refId, setRefId] =useState('')
+    const [trigFetchingStatus, setTrigFetchingStatus] = useState(false)
 
     Cookies.set('userInfo', user_info, { expires: 1 })
     Cookies.set('userCardId', user_card_id, { expires: 1 })
     console.log('userCardId = ', Cookies.get('userCardId'))
 
     // useEffect(() => {
-    //   if (user_card_id == 0) { 
-    //     router.push(`/creden?status=${204+" : id do not exist!"}`); 
+    //   if(Cookies.get('pendingUser')) {
+    //     fetchingStatus();
     //   }
-    //   if (user_idp_list == []) {
-    //     router.push(`/creden?status=${204+" : empty idps!"}`); 
-    //   }
-    //   console.log('trig >>>>>>>>>>')
     // }, [])
 
-    useMemo(() => {
-      console.log('in useEffect !!!!!!!!!!!!!!')
-      if (Cookies.get('pendingUser')) { console.log('the cookies had already set as ', Cookies.get('pendingUser')) }
-      if (!Cookies.get('pendingUser')) { console.log('the cookies had NOT already set !!!') }
+    // mount for interval fetching
+    const fetchingStatus = async() => {
+      //clearInterval(interval); // TEST var order declaration
+      const pendingUserCardIdasStr = await Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
+      const pendingUserCardId = await JSON.parse(pendingUserCardIdasStr)
+      setStartTs(pendingUserCardId['ts'])
+      const interval = setInterval(() => {
+        console.log('in the interval >>>>> MEMO <<<<< ref id = ', pendingUserCardId['reference_id']) // refId
+        if(!Cookies.get('pendingUser')) { clearInterval(interval); }
+        checkVerifyDataStatus(pendingUserCardId['reference_id'], pendingUserCardId['pairRefId'], interval)
+      }, 15000)
+    }
 
-      // get / perform cookie data  
-      try {
-        var pendingUserCardIdasStr = Cookies.get('pendingUser') // typeof Cookies.get('pendingUser') = string
-        var pendingUserCardId = JSON.parse(pendingUserCardIdasStr)
-        setStartTs(pendingUserCardId['ts'])
-        console.log('set start TS = ', pendingUserCardId['ts'])
-        setPairRefId(pendingUserCardId['pairRefId'])
-        console.log('set pairRefId = ', pendingUserCardId['pairRefId'])
-        setRefId(pendingUserCardId['reference_id'])
-        console.log('set RefId = ', pendingUserCardId['reference_id'])
-
-      } catch (e) { console.log('error @fetchStatusData: ', e) }
-
-      if(Cookies.get('pendingUser')){
-        const interval = setInterval(() => {
-            console.log('in the interval >>>>> MEMO <<<<< ref id = ', toVerify['reference_id']) // refId
-            if (!Cookies.get('pendingUser')) {
-              clearInterval(interval);
-            }
-            // fetch status
-            checkVerifyDataStatus(toVerify['reference_id'])
-        }, 15000)
-      }
-    }, [toVerify])
+    const backOrCancel = async() => {
+      console.log('timeout -> back to page')
+      await Cookies.remove('pendingUser')
+      router.back(`/creden?status=${'timeout'}`)
+    }
 
     const notify = () => toast("ไม่พบผู้ให้บริการ กรุณาเลือกธนาคารอื่น");
 
@@ -95,22 +81,22 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
 
       const pendingUser = await res.json()
       Cookies.set('pendingUser', JSON.stringify(pendingUser), { expires: 1 })
-      console.log('verifyData res = ', pendingUser)
-      return setToVerify(pendingUser)
+      console.log('pending_user_res = ', pendingUser)
+      //setStartTs(pendingUser['ts'])
+      await fetchingStatus()
     }
 
-    const checkVerifyDataStatus = async(reference_id) => {
-      console.log('ref_id (query) >>>>', reference_id)
-      console.log('ref_id (state) >>>>', toVerify['reference_id'])
+    const checkVerifyDataStatus = async(reference_id, pair_reference_id, interval) => {
+      console.log('ref_id  >>>>', reference_id)
+      console.log('pair_ref_id  >>>>', pair_reference_id)
       if (Cookies.get('pendingUser')) {
         try {
-          //const res = await axios.get(`/api/knum/verify/status/${reference_id}`, {
           const res = await fetch(`/api/knum/verify/status/${reference_id}`, {
             //method: "GET",
             headers: {
               "Accept": "application/json, text/plain, */*",
               "Content-Type": "application/json",
-              "Pair-Identity-Ref": toVerify['pairRefId'] // ใช้ pairRefId แล้วทำไม 404 ?  
+              "Pair-Identity-Ref": pair_reference_id //toVerify['pairRefId'] // ใช้ pairRefId แล้วทำไม 404 ?  
             },
           });
           console.log('check verified status ok? ', res.ok)
@@ -118,12 +104,17 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
             const status = await res.json()
             console.log('in checking the status: ',  status.status)
             if (status.status == 'VERIFIED') {
+              //setTrigFetchingStatus(false);
               Cookies.remove('pendingUser')
-              Cookies.remove('userInfo') // user_info
-              Cookies.remove('userCardId') // user_card-id
+              //Cookies.remove('userInfo') // user_info
+              //Cookies.remove('userCardId') // user_card-id
+              clearInterval(interval);
               router.push(`/creden?status=${status.status}`);
             }
             // Todo ... another res status
+            if (status.status == 'REJECT') {
+              setTrigFetchingStatus(false);
+            }
           }
           console.log('check verified !!!!')
         } catch (e) { 
@@ -131,6 +122,7 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
         }
         
       }
+      //return clearInterval(interval);
     }
 
     const idpIconSelected = user_idp_list
@@ -207,8 +199,8 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
                   }
                   />
                   <div>
-                      <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => router.back()}>ย้อนกลับ / ยกเลิก</button>
-                      <button className="my-8 mx-1 bg-[#f8b003] hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={verify}>ยืนยัน / ถัดไป</button>
+                      <button className="my-8 mx-1 bg-green-500 hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => setStartTs(startTS+600)}>( ➕ ) Ts</button>
+                      <button className="my-8 mx-1 bg-orange-500 hover:bg-blue-500 text-[#013976] hover:text-white font-bold py-2 px-4 rounded-md" onClick={() => setStartTs(startTS-600)}>( ➖ ) Ts</button>
                   </div>
                   
                 </div>
@@ -220,7 +212,7 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
                     : 
                     <div className='grid justify-items-center'>
                     <div className='h-25 w-96 mb-5 py-3 px-2 rounded-md bg-white text-black text-center'>
-                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร <p className='text-[12px]'>[ Transaction Ref: {refId} ]</p> 
+                      ท่านกำลังยืนยันตัวตนเพื่อใช้งานตามวัตถุประสงค์ของ MTS GOLD และประสงค์ให้ส่งข้อมูลจากธนาคาร <p className='text-[12px]'>[ Transaction Ref: {  } ]</p> 
                     </div>
                     <div className='h-25 w-96 mb-8 py-3 px-2 rounded-md bg-white text-black text-center'>
                       กรุณายืนยันตัวตนที่โมบายแอปพลิเคชั่นของผู้ให้บริการ ที่ท่านเลือก ภายใน 60 นาที และกลับมาทำรายการต่อที่นี่

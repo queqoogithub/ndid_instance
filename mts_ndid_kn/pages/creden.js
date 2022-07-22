@@ -125,7 +125,7 @@ export default function Home() {
           <img className="contrast-125 scale-75 rounded-2xl " src="/mts_logo.jpg" alt="mts_logo"/>
         </div>
         
-        <h3 className="text-lg py-4">❄️ Creden Form Instance</h3>
+        <h3 className="text-lg py-4"> Creden Form Instance </h3>
         <label className="py-2" htmlFor="name">Token to Cookie</label>
         <input className="rounded-md border p-1 text-blue-600"
           type="text"
@@ -194,6 +194,7 @@ export default function Home() {
       { query.status=='REJECT' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
       { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: user id do not exist</pre></> : null }
       { query.status=='205' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: idp do not exist</pre></> : null }
+      { query.status=='timeout' ? <><div>Verification Status</div><pre><b>⏰ { query.status }</b></pre><pre>message: idp do not exist</pre></> : null }
 
       <footer className="font-sans flex h-24 items-center justify-center text-blue-400 hover:text-[#1da1f2] ">
       ©️ Powered by{' '}BDEV
