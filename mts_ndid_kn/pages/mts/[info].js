@@ -1,6 +1,7 @@
 import CountTimer from '../../components/CountTimer'; 
 import IdpList from '../../components/IdpList'; 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
@@ -63,9 +64,8 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
               clearInterval(interval);
             }
             // fetch status
-             checkVerifyDataStatus(toVerify['reference_id'])
-            
-        }, 15000) 
+            checkVerifyDataStatus(toVerify['reference_id'])
+        }, 15000)
       }
     }, [toVerify])
 
@@ -104,8 +104,9 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
       console.log('ref_id (state) >>>>', toVerify['reference_id'])
       if (Cookies.get('pendingUser')) {
         try {
+          //const res = await axios.get(`/api/knum/verify/status/${reference_id}`, {
           const res = await fetch(`/api/knum/verify/status/${reference_id}`, {
-            method: "GET",
+            //method: "GET",
             headers: {
               "Accept": "application/json, text/plain, */*",
               "Content-Type": "application/json",
