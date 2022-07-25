@@ -1,12 +1,11 @@
 import CountTimer from '../../components/CountTimer'; 
 import IdpList from '../../components/IdpList'; 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
-import idps from '../../utils/idps';
 import idps_knum from '../../utils/idps_knum';
+import { userIdpsAndAsLogging } from '../../utils/Logger'; // data logger
 import { Switch } from '@headlessui/react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -266,6 +265,7 @@ export async function getServerSideProps(context) {
 
     if(idps.error) {
       console.log('IDPS error: ', idps.error)
+      await userIdpsAndAslogging({ts: Date.now(), card_id: card_id, error: idps.error})
     }
 
     if(!idps_res.ok) {
@@ -285,6 +285,8 @@ export async function getServerSideProps(context) {
         },
       }
     }
+
+    await userIdpsAndAsLogging({ts: Date.now(), card_id: card_id, idps}) // logging AS - IDPS
 
     const idp_user_regis = idps.map((idp) => (idps_knum.icons.find((c) => c.uuid == idp.id))).map((d) => d.name)
     console.log('idp_user_regis = ', idp_user_regis)

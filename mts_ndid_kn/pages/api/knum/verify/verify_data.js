@@ -2,6 +2,7 @@ import nc from "next-connect";
 import applyRateLimit from '../../../../utils/ApplyRateLimit';
 import pairs from "../../../../utils/PairIdentityInfo";
 import CryptoJS from 'crypto-js'
+import { userVerifyDataLogging } from "../../../../utils/Logger";
 
 const hashing = async (toHash) => {
     const password = process.env.SECRETE_KEY;
@@ -78,6 +79,11 @@ handler.post(async(req, res) => {
 
     const refIdHash = await hashing(verified.reference_id)
     console.log('hash ref_id = ', refIdHash)
+
+    // logging verified data
+    !as_res.ok || !verified_res.ok?
+        await userVerifyDataLogging({ts:Date.now(), card_id: user_id, selected_idp: selected_idp_uuid, error: as_res.error? as_res.error :  verified_res.error}):
+        await userVerifyDataLogging({ts:Date.now(), card_id: user_id, selected_idp: selected_idp_uuid, verified: verified})
 
     return res.status(200).json({...verified, ts: currentTs, pairRefId: refIdHash})
 
