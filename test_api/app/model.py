@@ -120,5 +120,15 @@ class VerifyDataSchema(BaseModel):
             }
         }
 
+class CidSchema(BaseModel):
+    cid: str = Field(...)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "cid": "3334445556667"
+            }
+        }
+
 # todo ... UAT simulation ----------------------------------------------- end #
 

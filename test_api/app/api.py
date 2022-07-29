@@ -4,11 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware # T-T
 #from rsa import verify
 #from sqlalchemy import null
 
-from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema, IdpSchema, VerifyDataSchema
+from app.model import PostSchema, UserSchema, UserLoginSchema, VerifySchema, IdpSchema, VerifyDataSchema, CidSchema
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import signJWT
 
 from datetime import datetime
+
+from app.sample_data import amlo_res
 
 
 posts = [
@@ -411,7 +413,8 @@ check_status_respone = [
                     }
                 ]
             },
-        ]  
+        ]
+  
 
 @app.post("/ndid/idps", dependencies=[Depends(JWTBearer())], tags=["idps"])
 async def user_idp_regis(response: Response, post: IdpSchema = Body(...)) -> dict:
@@ -468,3 +471,14 @@ async def active_status(reference_id: str, active_status: str) -> dict:
             return check_status_respone[check_status_respone.index(status)]
     return {"active status error": "somethong wrong"}
 # todo ... UAT simulation ----------------------------------------------- end #
+
+# todo ... AMLO simulation ----------------------------------------------- start #
+@app.post("/amlo/verify", dependencies=[Depends(JWTBearer())], tags=["amlo"])
+async def amlo_verify(response: Response, post: CidSchema = Body(...)) -> dict:
+    for amlo in amlo_res:
+        print('amlo id >>', amlo["identifier"])
+        print('amlo post cid >>', post.cid)
+        if amlo["identifier"] == post.cid:
+            return amlo_res[amlo_res.index(amlo)]['content']
+    return {"error": "id donot exist in amlo"}
+# todo ... AMLO simulation ----------------------------------------------- end #
