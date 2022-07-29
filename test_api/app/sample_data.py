@@ -48,11 +48,11 @@ amlo_res = [
         "content": [
             {
                 "list": "FREEZE-05",
-                "return_flag": "Y"
+                "return_flag": "N"
             },
             {
                 "list": "HR-02",
-                "return_flag": "N"
+                "return_flag": "Y"
             },
             {
                 "list": "HR-08-RISK",

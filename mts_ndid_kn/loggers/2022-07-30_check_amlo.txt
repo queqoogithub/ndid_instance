@@ -1,0 +1,1 @@
+{"ts":1659129697292,"card_id":4859473506827,"return_flag":["N","N","N",null]},{"ts":1659129720120,"card_id":"9999473506827","return_flag":["N","Y","N",null]},{"ts":1659129739830,"card_id":"9999473506827","return_flag":["N","Y","N",null]},{"ts":1659129805020,"card_id":4859473506827,"return_flag":["N","N","N",null]},

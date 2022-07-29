@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/router'
 import CryptoJS from 'crypto-js'
 import idps_knum from '../../utils/idps_knum';
-import { userIdpsAndAsLogging } from '../../utils/Logger'; // data logger
+import { userIdpsAndAsLogging, userAmloLogging } from '../../utils/Logger'; // data logger
 import { Switch } from '@headlessui/react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -238,6 +238,30 @@ export async function getServerSideProps(context) {
     const card_id = decryptedObject.info['card_id']
 
     // TODO ... check user blacklist -> GET AMLO (Knum service)
+    const amlo_res = await fetch("http://localhost:8081/amlo/verify", {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` 
+        //'Authorization': `Bearer ${process.env.KNUM_TOKEN}` // uat-knum
+      },
+      body: JSON.stringify({
+        "cid": card_id
+      })
+    })
+    console.log('AMLO res do not ok? > ', !amlo_res.ok)
+    const amlo = await amlo_res.json()
+    const amloList = amlo.map( c => c.return_flag )
+    console.log('amlo list = ', amloList)
+    await userAmloLogging({ts: Date.now(), card_id: card_id, return_flag: amloList})
+    if(amloList.includes('Y')){
+      return {
+        redirect: {
+        destination: '/creden?status=203',
+        permanent: false,
+      }}
+    }
 
     // @(Knum service) ... (1) POST:idps -> idp_list (2) GET:authoritative_source ->  (node_id = as_id_list) (3) POST:verify data -> ref_id (4) check verify status -> status 
     
@@ -247,7 +271,7 @@ export async function getServerSideProps(context) {
       headers: {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` // process.env.TEST_API_TOKEN
+        'Authorization': `Bearer ${process.env.TEST_API_TOKEN}` 
         //'Authorization': `Bearer ${process.env.KNUM_TOKEN}` // uat-knum
       },
       body: JSON.stringify({
@@ -265,7 +289,7 @@ export async function getServerSideProps(context) {
 
     if(idps.error) {
       console.log('IDPS error: ', idps.error)
-      await userIdpsAndAslogging({ts: Date.now(), card_id: card_id, error: idps.error})
+      await userIdpsAndAsLogging({ts: Date.now(), card_id: card_id, error: idps.error})
     }
 
     if(!idps_res.ok) {

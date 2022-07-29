@@ -40,3 +40,10 @@ export const userCheckVerifyDataStatusLogging = async(updatedJSON) => {
     console.log('Check status log with: ', updatedJSON)
 }
 
+export const userAmloLogging = async(updatedJSON) => {
+    fs.appendFile(`./loggers//${headName}_check_amlo.txt`, JSON.stringify(updatedJSON) + ',' , (err) => {
+        if(err) console.log('Error writing file:', err);
+    })
+    console.log('Check AMLO log with: ', updatedJSON)
+}
+

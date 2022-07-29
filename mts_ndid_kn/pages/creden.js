@@ -192,6 +192,7 @@ export default function Home() {
       <p className="text-3xl font-bold underline py-4"></p>
       { query.status=='VERIFIED' ? <><div>Verification Status</div><pre><b>🟢 { query.status }</b></pre></> : null }
       { query.status=='REJECT' ? <><div>Verification Status</div><pre><b>🔴 { query.status }</b></pre><pre>message: xxxx</pre></> : null }
+      { query.status=='203' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: user do not pass amlo policy</pre></> : null }
       { query.status=='204' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: user id do not exist</pre></> : null }
       { query.status=='205' ? <><div>Verification Status</div><pre><b>🟠 { query.status }</b></pre><pre>message: idp do not exist</pre></> : null }
       { query.status=='timeout' ? <><div>Verification Status</div><pre><b>⏰ { query.status }</b></pre><pre>message: idp do not exist</pre></> : null }
