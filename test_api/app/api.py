@@ -333,6 +333,9 @@ idps = [{"identifier": 4859473506827,                         # id card
             }
          ]
         },
+        {"identifier": 1150123401112,                         
+         "content": []
+        },
       ]
 
 verify_respones = [{"identifier": 3334445556667, 

@@ -1,0 +1,1 @@
+{"ts":1659337613582,"status":{"reference_id":"22222222-0409-11ed-b939-0242ac120002","ndid_request_id":"bbbbba53fedc83f490c44bf602eec7b2a1a2034a96d710dc203d22354219a567","status":"VERIFIED","response_list":[{"aal":2.2,"ial":2.3,"idp_id":"0F5A378A-FF19-4C00-A549-EA208A1C120A","status":"accept"}]}},

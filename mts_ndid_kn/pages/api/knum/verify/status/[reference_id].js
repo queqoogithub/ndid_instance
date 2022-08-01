@@ -39,6 +39,6 @@ handler.get(async (req, res) => {
         return res.status(200).json(status);
     }
     //return res.status(200).json(status);
-  });
+});
   
 export default handler;

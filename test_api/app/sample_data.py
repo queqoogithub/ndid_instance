@@ -65,5 +65,49 @@ amlo_res = [
             }
         ]
     },
+    {
+        "identifier": "1010473501010",
+        "content": [
+            {
+                "list": "FREEZE-05",
+                "return_flag": "N"
+            },
+            {
+                "list": "HR-02",
+                "return_flag": "N"
+            },
+            {
+                "list": "HR-08-RISK",
+                "return_flag": "N"
+            },
+            {
+                "app_id": "MTS",
+                "reference": "111aa555-0ed2-4f5b-8106-bb1196d33acc",
+                "updated_time": "2022-07-29T16:24:36.165+07:00"
+            }
+        ]
+    },
+    {
+        "identifier": "1150123401112",
+        "content": [
+            {
+                "list": "FREEZE-05",
+                "return_flag": "N"
+            },
+            {
+                "list": "HR-02",
+                "return_flag": "N"
+            },
+            {
+                "list": "HR-08-RISK",
+                "return_flag": "N"
+            },
+            {
+                "app_id": "MTS",
+                "reference": "111aa555-0ed2-4f5b-8106-bb1196d33acc",
+                "updated_time": "2022-07-29T16:24:36.165+07:00"
+            }
+        ]
+    },
 
 ]

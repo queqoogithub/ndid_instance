@@ -12,5 +12,6 @@ const handler = nc({
 handler.use(applyRateLimit);
 
 handler.post(async()=>{
-    // Todo ... ipds list ?
+  // Todo ... from creden 1st input 
+  const { identifier } = req.query;
 });
