@@ -104,7 +104,8 @@ const User = ({ user_card_id, user_idp_list, user_firstname, user_lastname, user
               //Cookies.remove('userInfo') // user_info
               //Cookies.remove('userCardId') // user_card-id
               clearInterval(interval);
-              router.push(`/creden?status=${status.status}`);
+              //router.push(`/creden?status=${status.status}`);
+              router.push(`/mts/ec/finish`);
             }
             // Todo ... another res status
             if (status.status == 'REJECT') {
